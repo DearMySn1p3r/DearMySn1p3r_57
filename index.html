@@ -600,22 +600,18 @@ function fitView(){
   clampView();
 }
 
-function render(ctx, t, W, H, gifExport){
+function render(ctx, t, W, H){
   ctx.setTransform(1,0,0,1,0,0);
   ctx.clearRect(0,0,W,H);
   ctx.filter = "none";
   ctx.globalCompositeOperation = "source-over";
   ctx.imageSmoothingQuality = "high";
 
-  /* 배경 — GIF로 뽑을 때 투명 모드이거나 사각형이 아닌 모양이면
-     클립 밖까지 키 컬러로 채워서 그 부분이 GIF에서 투명이 되게 함 */
-  const useKey = gifExport && (S.bgmode === "none" || S.shape !== "rect");
-  if(useKey){ ctx.fillStyle = "#FF00FF"; ctx.fillRect(0,0,W,H); }
+  /* 배경 */
   ctx.save();
   clipShape(ctx, W, H);
   if(S.bgmode === "none"){
-    /* 미리보기·PNG에서는 진짜 투명, GIF에서는 위에서 채운 키 컬러 유지 */
-    if(gifExport) { ctx.fillStyle = "#FF00FF"; ctx.fillRect(0,0,W,H); }
+    /* 진짜 투명으로 둠 — GIF 투명 처리는 저장 단계에서 픽셀 단위로 함 */
   }else if(S.bgmode === "image" && S.bgimg){
     ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
     drawCover(ctx, S.bgimg, W, H);
@@ -974,11 +970,13 @@ $("#makegif").onclick = async () => {
     workerScript: await getWorker(),
     dither: false
   };
-  if(S.bgmode === "none" || S.shape !== "rect") opt.transparent = 0xFF00FF;
+  const needKey = S.bgmode === "none" || S.shape !== "rect";
+  if(needKey) opt.transparent = 0xFF00FF;
   const gif = new GIF(opt);
 
   for(let f=0; f<F; f++){
-    render(octx, f/F, S.W, S.H, true);
+    render(octx, f/F, S.W, S.H);
+    if(needKey) keyOutTransparency(octx, S.W, S.H);
     gif.addFrame(octx, {copy:true, delay});
     setProg(f/F*0.35, "프레임 " + (f+1) + "/" + F);
     if(f%4===0) await new Promise(r => setTimeout(r,0));
@@ -997,6 +995,25 @@ $("#makegif").onclick = async () => {
   });
   gif.render();
 };
+/* 반투명 가장자리 때문에 생기던 분홍 테두리 제거:
+   진짜 투명으로 그린 프레임을 픽셀 단위로 정리한다.
+   - 알파가 절반 미만 → 완전 투명(키 컬러)
+   - 알파가 절반 이상 → 원래 색 그대로 불투명 처리
+   - 이미지에 우연히 키 컬러와 같은 픽셀이 있으면 티 안 나게 1만큼 비틀기 */
+function keyOutTransparency(ctx, W, H){
+  const im = ctx.getImageData(0, 0, W, H);
+  const d = im.data;
+  for(let i=0; i<d.length; i+=4){
+    if(d[i+3] < 128){
+      d[i]=255; d[i+1]=0; d[i+2]=255; d[i+3]=255;
+    }else{
+      if(d[i]===255 && d[i+1]===0 && d[i+2]===255) d[i]=254;
+      d[i+3]=255;
+    }
+  }
+  ctx.putImageData(im, 0, 0);
+}
+
 function setProg(v, txt){
   $("#progbar").style.width = Math.round(v*100) + "%";
   $("#progtxt").textContent = txt;
