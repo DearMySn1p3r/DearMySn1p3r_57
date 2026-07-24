@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jiggle Studio</title>
+<link rel="icon" type="image/png" href="MOMO.png">
+<link rel="apple-touch-icon" href="MOMO.png">
+<meta name="description" content="이미지를 흔들흔들 움직이는 GIF로 만드는 도구. 전부 브라우저 안에서 처리됩니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<style>
+:root{
+  --bg:#F7F7F5;
+  --card:#FFFFFF;
+  --ink:#1B1B1F;
+  --sub:#8A8A93;
+  --faint:#B9B9C0;
+  --line:#E8E8E4;
+  --accent:#5B5BF0;
+  --accent-soft:#EEEEFE;
+  --r:16px;
+  --r-sm:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  font-size:13.5px;line-height:1.55;
+  padding:28px 20px 72px;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+h1,h2{margin:0;font-weight:600}
+
+/* ---------- header ---------- */
+.top{max-width:1120px;margin:0 auto 22px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.wordmark{
+  font-family:"Space Grotesk",Pretendard,sans-serif;
+  font-size:clamp(24px,3.4vw,32px);font-weight:700;letter-spacing:-.03em;
+  display:inline-flex;align-items:baseline;gap:2px;
+}
+.wordmark .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--accent);
+  display:inline-block;margin-left:5px;transform-origin:50% 100%;
+  animation:dotb 1.15s cubic-bezier(.3,0,.4,1) infinite;
+}
+@keyframes dotb{
+  0%,100%{transform:translateY(0) scale(1,1)}
+  38%{transform:translateY(-7px) scale(.92,1.08)}
+  74%{transform:translateY(0) scale(1.25,.75)}
+}
+.tagline{color:var(--sub);font-size:13.5px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:20px;align-items:start}
+@media (max-width:920px){.wrap{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card + .card{margin-top:14px}
+.card > h2{
+  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.count{color:var(--accent);letter-spacing:0}
+
+/* ---------- stage ---------- */
+.holder{
+  position:relative;border-radius:12px;overflow:hidden;
+  background:#EFEFEC;
+  display:flex;align-items:center;justify-content:center;
+  min-height:320px;touch-action:none;
+}
+.holder.drag::after{
+  content:"놓아서 불러오기";position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(91,91,240,.92);color:#fff;font-weight:600;font-size:15px;
+  border-radius:12px;
+}
+#view{display:block;max-width:100%;max-height:min(64vh,640px);cursor:grab}
+#view.grabbing{cursor:grabbing}
+#view.hidden{display:none}
+
+.empty{padding:56px 24px;text-align:center;max-width:380px}
+.empty .glyph{
+  width:52px;height:52px;margin:0 auto 16px;border-radius:14px;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  animation:dotb 1.4s cubic-bezier(.3,0,.4,1) infinite;
+}
+.empty .big{font-size:16px;font-weight:600;margin-bottom:5px}
+.empty p{color:var(--sub);margin:0 0 18px}
+
+.stagefoot{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--sub);font-size:12px;flex-wrap:wrap}
+.stagefoot .grow{flex:1}
+.kbd{display:flex;gap:12px;flex-wrap:wrap}
+.kbd b{font-weight:600;color:var(--ink)}
+.textbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:12px}
+.textbtn:hover{text-decoration:underline}
+
+/* ---------- buttons ---------- */
+.btn{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:8px 14px;font-weight:600;cursor:pointer;transition:border-color .12s,background .12s,transform .05s;
+}
+.btn:hover{border-color:var(--faint)}
+.btn:active{transform:scale(.985)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.solid{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.solid:hover{background:#000}
+.btn.go{background:var(--accent);border-color:var(--accent);color:#fff;width:100%;font-size:14.5px;padding:12px}
+.btn.go:hover{background:#4A4AE0}
+.btn.mini{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- fields ---------- */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field > label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:7px}
+.field > label span{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+input[type=color]{
+  width:34px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer;
+}
+input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
+
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);padding:3px;gap:2px}
+.seg button{
+  flex:1;background:none;border:0;border-radius:7px;padding:6px 4px;
+  font-weight:600;font-size:12px;color:var(--sub);cursor:pointer;transition:background .12s,color .12s;
+}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(27,27,31,.10)}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:4px}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border-radius:50%;
+  background:#fff;border:1.5px solid var(--faint);box-shadow:0 1px 4px rgba(27,27,31,.18);
+  transition:border-color .12s;
+}
+input[type=range]:hover::-webkit-slider-thumb,input[type=range]:active::-webkit-slider-thumb{border-color:var(--accent)}
+input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:4px}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:1.5px solid var(--faint)}
+
+.filechip{
+  display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:7px 10px;font-size:12px;color:var(--sub);
+}
+.filechip .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:600}
+.filechip .x{background:none;border:0;color:var(--faint);cursor:pointer;font-size:13px;padding:0 2px;font-weight:700}
+.filechip .x:hover{color:var(--ink)}
+
+/* ---------- effects ---------- */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{
+  background:var(--bg);border:1px solid var(--line);border-radius:20px;
+  padding:4px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;
+  transition:all .12s;
+}
+.chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+
+.fx{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.fxbtn{
+  background:var(--bg);border:1px solid var(--line);border-radius:12px;
+  padding:10px 4px 9px;cursor:pointer;text-align:center;transition:all .12s;
+}
+.fxbtn .ico{font-size:17px;display:block;line-height:1.25;color:var(--sub);will-change:transform;animation-play-state:paused}
+.fxbtn .nm{font-size:11px;font-weight:600;color:var(--sub);display:block;margin-top:3px;letter-spacing:-.01em}
+.fxbtn:hover{border-color:var(--faint)}
+.fxbtn:hover .ico{animation-play-state:running}
+.fxbtn[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent)}
+.fxbtn[aria-pressed=true] .ico{color:var(--accent);animation-play-state:running}
+.fxbtn[aria-pressed=true] .nm{color:var(--accent)}
+.fxbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.a-sizzle{animation:boil .3s steps(1,end) infinite}
+@keyframes boil{
+  0%{transform:translate(0,0) rotate(0deg)}
+  25%{transform:translate(-1px,1px) rotate(-1deg)}
+  50%{transform:translate(1px,-1px) rotate(.8deg)}
+  75%{transform:translate(1px,1px) rotate(-.5deg)}
+}
+.a-squish{animation:squish 1s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes squish{0%,100%{transform:scale(1,1)}35%{transform:scale(1.12,.88)}70%{transform:scale(.94,1.07)}}
+.a-bounce{animation:bnc .75s cubic-bezier(.3,0,.5,1) infinite}
+@keyframes bnc{0%,100%{transform:translateY(2px) scaleY(.87) scaleX(1.13)}45%{transform:translateY(-6px)}}
+.a-jelly{animation:jel 1s ease-in-out infinite}
+@keyframes jel{0%,100%{transform:skewX(0)}30%{transform:skewX(10deg)}65%{transform:skewX(-8deg)}}
+.a-ripple{animation:rip 1.4s ease-in-out infinite}
+@keyframes rip{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+.a-pulse{animation:pls .95s ease-out infinite}
+@keyframes pls{0%,100%{transform:scale(1)}12%{transform:scale(1.22)}30%{transform:scale(1)}42%{transform:scale(1.12)}}
+.a-shake{animation:shk .2s linear infinite}
+@keyframes shk{0%,100%{transform:translateX(-2px)}50%{transform:translateX(2px)}}
+.a-wobble{animation:wob 1s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(-11deg)}50%{transform:rotate(11deg)}}
+.a-breathe{animation:brt 2s ease-in-out infinite}
+@keyframes brt{0%,100%{transform:scale(1)}50%{transform:scale(1.16)}}
+.a-spin{animation:spn 1.5s linear infinite}
+@keyframes spn{to{transform:rotate(360deg)}}
+.a-glitch{animation:gl .32s steps(1,end) infinite}
+@keyframes gl{0%{transform:translateX(0)}30%{transform:translateX(-3px) skewX(7deg)}60%{transform:translateX(3px)}}
+
+.tuner{margin-top:14px;border-top:1px solid var(--line);padding-top:13px}
+.tuner .tname{font-weight:600;font-size:12.5px;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.tuner .tname .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.tuner .off{margin-left:auto;background:none;border:0;color:var(--faint);font-size:11.5px;font-weight:600;cursor:pointer;padding:2px 4px}
+.tuner .off:hover{color:var(--ink)}
+.slider{display:grid;grid-template-columns:36px 1fr 30px;align-items:center;gap:9px;margin-bottom:2px}
+.slider label{font-size:11px;font-weight:600;color:var(--sub)}
+.slider output{font-size:11px;font-variant-numeric:tabular-nums;text-align:right;color:var(--sub)}
+.muted{color:var(--faint);font-size:12px;margin:10px 0 0}
+
+/* ---------- export ---------- */
+.prog{margin-top:12px;border-radius:8px;overflow:hidden;height:26px;background:var(--bg);position:relative;display:none;border:1px solid var(--line)}
+.prog.on{display:block}
+.prog i{display:block;height:100%;background:var(--accent);width:0%;transition:width .15s;border-radius:0 6px 6px 0}
+.prog span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;mix-blend-mode:difference;color:#fff}
+
+.result{display:none;margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);text-align:center}
+.result.on{display:block}
+.result img{max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;background:#fff}
+.result .muted{margin-top:8px}
+.warn{font-size:12px;color:#9A6700;background:#FFF6E0;border:1px solid #F2DFAE;border-radius:8px;padding:8px 10px;margin-top:10px}
+
+.foot{max-width:1120px;margin:32px auto 0;color:var(--faint);font-size:12px;text-align:center}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1 class="wordmark">Jiggle Studio<span class="dot"></span></h1>
+  <div class="tagline">이미지 한 장을 움직이는 GIF로</div>
+</header>
+
+<div class="wrap">
+  <!-- ============ STAGE ============ -->
+  <main>
+    <section class="card">
+      <div class="holder" id="holder">
+        <canvas id="view" class="hidden" width="480" height="480"></canvas>
+        <div class="empty" id="empty">
+          <div class="glyph">↓</div>
+          <div class="big">이미지를 여기에 놓으세요</div>
+          <p>PNG면 투명한 부분이 그대로 살아요.<br>붙여넣기(Ctrl/⌘+V)도 됩니다</p>
+          <button class="btn solid" id="pick">이미지 고르기</button>
+        </div>
+      </div>
+      <div class="stagefoot">
+        <div class="kbd">
+          <span><b>드래그</b> 이동</span>
+          <span><b>휠·핀치</b> 확대</span>
+          <span><b>더블클릭</b> 맞추기</span>
+        </div>
+        <span class="grow"></span>
+        <button class="textbtn" id="swap" style="display:none">이미지 바꾸기</button>
+        <button class="textbtn" id="fit">화면에 맞추기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ PANEL ============ -->
+  <aside>
+    <section class="card">
+      <h2>효과 <span class="count" id="fxcount"></span></h2>
+      <div class="chips" id="presets"></div>
+      <div class="fx" id="fxgrid"></div>
+      <div id="tuners"></div>
+      <p class="muted" id="fxempty">효과를 눌러 켜세요. 여러 개를 겹칠 수 있어요.</p>
+    </section>
+
+    <section class="card">
+      <h2>배경</h2>
+      <div class="field">
+        <div class="seg" id="bgmode">
+          <button data-m="color" aria-pressed="true">색상</button>
+          <button data-m="image" aria-pressed="false">이미지</button>
+          <button data-m="none" aria-pressed="false">투명</button>
+        </div>
+      </div>
+      <div class="field" id="bgcolorbox">
+        <div class="row">
+          <input type="color" id="bgcolor" value="#ffffff" aria-label="배경색">
+          <span class="muted" style="margin:0">GIF 뒤에 깔릴 색</span>
+        </div>
+      </div>
+      <div class="field" id="bgimagebox" style="display:none">
+        <button class="btn mini" id="bgpick">배경 이미지 고르기</button>
+        <div class="filechip" id="bgchip" style="display:none;margin-top:8px">
+          <span class="nm" id="bgname"></span>
+          <button class="x" id="bgclear" aria-label="배경 이미지 제거">✕</button>
+        </div>
+        <p class="muted">배경은 움직이지 않고, 앞의 이미지만 흔들려요.</p>
+      </div>
+      <p class="muted" id="bgnonenote" style="display:none">투명 GIF로 저장돼요. 스티커나 이모티콘용.</p>
+    </section>
+
+    <section class="card">
+      <h2>화면</h2>
+      <div class="field">
+        <div class="seg" id="ratio">
+          <button data-r="1:1" aria-pressed="true">1:1</button>
+          <button data-r="4:5" aria-pressed="false">4:5</button>
+          <button data-r="9:16" aria-pressed="false">9:16</button>
+          <button data-r="16:9" aria-pressed="false">16:9</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="size">크기 <span id="sizev">480px</span></label>
+        <input id="size" type="range" min="180" max="800" step="20" value="480">
+      </div>
+      <div class="field">
+        <div class="seg" id="shape">
+          <button data-s="rect" aria-pressed="true">사각형</button>
+          <button data-s="round" aria-pressed="false">둥근 모서리</button>
+          <button data-s="circle" aria-pressed="false">원형</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="pad">여백 <span id="padv">0%</span></label>
+        <input id="pad" type="range" min="0" max="30" step="1" value="0">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>움직임</h2>
+      <div class="field">
+        <label for="dur">한 바퀴 <span id="durv">1.0초</span></label>
+        <input id="dur" type="range" min="3" max="30" step="1" value="10">
+      </div>
+      <div class="field">
+        <label for="fps">초당 프레임 <span id="fpsv">20 · 총 20프레임</span></label>
+        <input id="fps" type="range" min="6" max="30" step="1" value="20">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>저장</h2>
+      <button class="btn go" id="makegif">GIF 만들기</button>
+      <div class="prog" id="prog"><i id="progbar"></i><span id="progtxt">0%</span></div>
+      <div class="row" style="margin-top:9px">
+        <button class="btn mini" id="makepng" style="flex:1">지금 화면 PNG로 저장</button>
+      </div>
+      <div class="result" id="result">
+        <img id="resultimg" alt="완성된 GIF 미리보기">
+        <a class="btn solid" id="dl" download="jiggle.gif" href="#" style="display:inline-block;text-decoration:none">내려받기</a>
+        <div class="muted" id="resultinfo"></div>
+      </div>
+      <div class="warn" id="giferr" style="display:none">GIF 엔진을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.</div>
+    </section>
+  </aside>
+</div>
+
+<p class="foot">모든 처리는 브라우저 안에서 이뤄지고, 이미지는 어디에도 업로드되지 않습니다.</p>
+<input type="file" id="file" accept="image/*" class="sr">
+<input type="file" id="bgfile" accept="image/*" class="sr">
+
+<script>
+"use strict";
+/* ============================================================
+   상태
+   ============================================================ */
+const S = {
+  img:null,          // 효과가 적용되는 앞 이미지 (PNG면 투명 유지)
+  bgimg:null,        // 움직이지 않는 배경 이미지
+  W:480, H:480,
+  ratio:"1:1", size:480,
+  shape:"rect",
+  bgmode:"color",    // color | image | none
+  bg:"#ffffff",
+  pad:0,
+  view:{scale:1,x:0,y:0},
+  fps:20, dur:1.0,
+  fx:{}
+};
+const GIF_QUALITY = 8;   // 고정 품질
+
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+const TAU = Math.PI*2;
+function rnd(a,b){ const x = Math.sin(a*127.1 + b*311.7)*43758.5453; return x - Math.floor(x); }
+function rotEx(th,W,H){
+  const c=Math.abs(Math.cos(th)), s=Math.abs(Math.sin(th));
+  return Math.max((W*c+H*s)/W, (W*s+H*c)/H) - 1;
+}
+
+/* ============================================================
+   효과 정의
+   ============================================================ */
+const EFFECTS = [
+{ id:"sizzle", name:"짜글짜글", ico:"〰", anim:"a-sizzle",
+  d:{i:40,s:40},
+  ex:(p)=>rotEx(0.02*p.i,1,1)+0.015*p.i,
+  sh:(p)=>({x:0.026*p.i, y:0.022*p.i}),
+  apply(st,t,p,W,H){
+    const steps = Math.max(2, Math.round(2 + p.s*8));
+    const k = Math.floor(t*steps);
+    const A = 0.013*p.i*Math.min(W,H);
+    st.tx += (rnd(k,1)*2-1)*A;
+    st.ty += (rnd(k,2)*2-1)*A;
+    st.rot += (rnd(k,3)*2-1)*0.02*p.i;
+    st.sx *= 1 + (rnd(k,4)*2-1)*0.008*p.i;
+    st.sy *= 1 + (rnd(k,5)*2-1)*0.008*p.i;
+  }
+},
+{ id:"squish", name:"말랑말랑", ico:"◗", anim:"a-squish",
+  d:{i:55,s:50},
+  ex:(p)=>0.31*p.i, sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const n = Math.round(1 + p.s*2);
+    const s = Math.sin(TAU*t*n);
+    const a = 0.21*p.i;
+    st.sx *= 1 + a*s;
+    st.sy *= 1 - a*s*0.92;
+  }
+},
+{ id:"bounce", name:"통통", ico:"●", anim:"a-bounce",
+  d:{i:55,s:40},
+  ex:(p)=>0.17*p.i, sh:(p)=>({x:0, y:0.12*p.i}),
+  apply(st,t,p,W,H){
+    const n = Math.round(1 + p.s*2);
+    const b = Math.abs(Math.sin(Math.PI*t*n));
+    st.ty -= 0.105*p.i*H*b;
+    const sq = Math.pow(1-b,3);
+    st.sx *= 1 + 0.14*p.i*sq;
+    st.sy *= 1 - 0.14*p.i*sq;
+  }
+},
+{ id:"jelly", name:"젤리", ico:"⌇", anim:"a-jelly",
+  d:{i:40,s:45},
+  ex:()=>0, sh:(p)=>({x:0.043*p.i, y:0}),
+  apply(st,t,p,W){
+    const A = 0.038*p.i*W, w = 1 + p.s*2.5;
+    st.rows.push(yn => A*Math.sin(yn*TAU*w - TAU*t));
+  }
+},
+{ id:"ripple", name:"물결", ico:"≋", anim:"a-ripple",
+  d:{i:40,s:40},
+  ex:()=>0, sh:(p)=>({x:0.05*p.i, y:0}),
+  apply(st,t,p,W){
+    const A = 0.028*p.i*W, k = 3 + p.s*6;
+    st.rows.push(yn => A*(Math.sin(yn*k - TAU*t) + 0.5*Math.sin(yn*k*1.9 + TAU*t*1.5)));
+  }
+},
+{ id:"pulse", name:"두근두근", ico:"♥", anim:"a-pulse",
+  d:{i:55,s:50},
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const n = Math.round(1 + p.s*2);
+    const u = (t*n)%1;
+    const a = u<0.36 ? Math.sin(u/0.36*Math.PI) : 0;
+    const k = 1 + 0.14*p.i*a;
+    st.sx *= k; st.sy *= k;
+  }
+},
+{ id:"shake", name:"흔들흔들", ico:"⇄", anim:"a-shake",
+  d:{i:40,s:55},
+  ex:(p)=>rotEx(0.022*p.i,1,1),
+  sh:(p)=>({x:0.04*p.i, y:0.02*p.i}),
+  apply(st,t,p,W,H){
+    const n = Math.round(2 + p.s*10);
+    st.tx += 0.035*p.i*W*Math.sin(TAU*t*n);
+    st.ty += 0.018*p.i*H*Math.sin(TAU*t*n*2 + 1.1);
+    st.rot += 0.022*p.i*Math.sin(TAU*t*n*0.5);
+  }
+},
+{ id:"wobble", name:"갸우뚱", ico:"↺", anim:"a-wobble",
+  d:{i:45,s:40},
+  ex:(p,W,H)=>rotEx(0.22*p.i,W,H), sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const n = Math.round(1 + p.s*2);
+    st.rot += 0.22*p.i*Math.sin(TAU*t*n);
+  }
+},
+{ id:"breathe", name:"숨쉬기", ico:"◎", anim:"a-breathe",
+  d:{i:40,s:35},
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const n = Math.round(1 + p.s*2);
+    const k = 1 + 0.11*p.i*(0.5 - 0.5*Math.cos(TAU*t*n));
+    st.sx *= k; st.sy *= k;
+  }
+},
+{ id:"spin", name:"빙글빙글", ico:"✦", anim:"a-spin",
+  d:{i:100,s:40},
+  ex:(p,W,H)=>{ const d=Math.hypot(W,H); return Math.max(d/W,d/H)-1+0.02; },
+  sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const n = Math.max(1, Math.round(1 + p.s*2));
+    st.rot += TAU*t*n;
+  }
+},
+{ id:"glitch", name:"글리치", ico:"▚", anim:"a-glitch",
+  d:{i:45,s:55},
+  ex:()=>0, sh:(p)=>({x:0.08*p.i, y:0}),
+  apply(st,t,p,W){
+    const steps = Math.max(3, Math.round(4 + p.s*16));
+    const k = Math.floor(t*steps);
+    const A = 0.07*p.i*W;
+    st.rows.push(yn => {
+      const b = Math.floor(yn*12);
+      return rnd(k, 900+b) > 0.8 ? (rnd(k,1300+b)*2-1)*A : 0;
+    });
+    st.rgb = 0.011*p.i*W*(0.3 + rnd(k,7));
+  }
+}
+];
+
+const PRESETS = [
+  {n:"짜글짜글 밈",  fx:{sizzle:{i:45,s:40}}},
+  {n:"말랑 젤리",   fx:{squish:{i:55,s:45}, jelly:{i:35,s:45}}},
+  {n:"통통 스티커", fx:{bounce:{i:60,s:40}, squish:{i:30,s:45}}},
+  {n:"두근두근",    fx:{pulse:{i:60,s:50}, breathe:{i:25,s:35}}},
+  {n:"고장난 TV",   fx:{glitch:{i:50,s:60}, shake:{i:22,s:70}}},
+  {n:"물 속",       fx:{ripple:{i:45,s:40}, breathe:{i:30,s:30}}},
+];
+
+/* ============================================================
+   캔버스
+   ============================================================ */
+const view = $("#view");
+const vctx = view.getContext("2d");
+const scratch = document.createElement("canvas");
+const sctx = scratch.getContext("2d");
+const tmp = document.createElement("canvas");
+const tctx = tmp.getContext("2d");
+const comp = document.createElement("canvas");
+const cctx = comp.getContext("2d");
+const out = document.createElement("canvas");
+const octx = out.getContext("2d");
+
+function frames(){ return Math.max(2, Math.round(S.fps * S.dur)); }
+function activeFx(){ return EFFECTS.filter(e => S.fx[e.id] && S.fx[e.id].on); }
+function par(e){ const v = S.fx[e.id]; return {i:v.i/100, s:v.s/100}; }
+
+/* 어떤 프레임에서도 빈 공간이 없도록 필요한 커버 영역 계산 */
+function need(){
+  const W=S.W, H=S.H;
+  let ex=0, sx=0, sy=0;
+  for(const e of activeFx()){
+    const p = par(e);
+    ex += e.ex(p, W, H);
+    const s = e.sh(p, W, H);
+    sx += s.x; sy += s.y;
+  }
+  const rw = (W*(1+ex) + 2*sx*W)*1.02 + 4;
+  const rh = (H*(1+ex) + 2*sy*H)*1.02 + 4;
+  return { rw, rh, x0:W/2-rw/2, y0:H/2-rh/2 };
+}
+function lockView(){ return S.bgmode === "color"; }  /* 색상 배경일 때만 꽉 채우기 강제 */
+function minScale(){
+  if(!S.img) return 1;
+  if(!lockView()) return 0.05;
+  const n = need();
+  return Math.max(n.rw/S.img.naturalWidth, n.rh/S.img.naturalHeight);
+}
+function clampView(){
+  if(!S.img) return;
+  const ms = minScale();
+  S.view.scale = Math.max(S.view.scale, ms);
+  if(!lockView()){
+    /* 배경 이미지/투명: 이미지가 화면 밖으로 완전히 나가지만 않게 */
+    const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
+    const m = Math.min(S.W,S.H)*0.1;
+    S.view.x = clamp(S.view.x, m-dw, S.W-m);
+    S.view.y = clamp(S.view.y, m-dh, S.H-m);
+    return;
+  }
+  const n = need();
+  const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
+  S.view.x = clamp(S.view.x, n.x0 + n.rw - dw, n.x0);
+  S.view.y = clamp(S.view.y, n.y0 + n.rh - dh, n.y0);
+}
+function fitView(){
+  if(!S.img) return;
+  const iw = S.img.naturalWidth, ih = S.img.naturalHeight;
+  let sc;
+  if(lockView()){
+    sc = minScale();
+  }else{
+    sc = Math.min(S.W/iw, S.H/ih) * 0.86;   /* 배경 위에 살짝 여유 있게 */
+  }
+  S.view.scale = sc;
+  S.view.x = S.W/2 - iw*sc/2;
+  S.view.y = S.H/2 - ih*sc/2;
+  clampView();
+}
+
+function render(ctx, t, W, H, gifExport){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.filter = "none";
+  ctx.globalCompositeOperation = "source-over";
+  ctx.imageSmoothingQuality = "high";
+
+  /* 배경 — GIF로 뽑을 때 투명 모드이거나 사각형이 아닌 모양이면
+     클립 밖까지 키 컬러로 채워서 그 부분이 GIF에서 투명이 되게 함 */
+  const useKey = gifExport && (S.bgmode === "none" || S.shape !== "rect");
+  if(useKey){ ctx.fillStyle = "#FF00FF"; ctx.fillRect(0,0,W,H); }
+  ctx.save();
+  clipShape(ctx, W, H);
+  if(S.bgmode === "none"){
+    /* 미리보기·PNG에서는 진짜 투명, GIF에서는 위에서 채운 키 컬러 유지 */
+    if(gifExport) { ctx.fillStyle = "#FF00FF"; ctx.fillRect(0,0,W,H); }
+  }else if(S.bgmode === "image" && S.bgimg){
+    ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
+    drawCover(ctx, S.bgimg, W, H);
+  }else{
+    ctx.fillStyle = S.bg; ctx.fillRect(0,0,W,H);
+  }
+  ctx.restore();
+
+  if(!S.img) return;
+
+  const st = {tx:0,ty:0,sx:1,sy:1,rot:0,rows:[],filter:[],rgb:0};
+  for(const e of activeFx()) e.apply(st, t, par(e), W, H);
+
+  if(scratch.width!==W || scratch.height!==H){ scratch.width=W; scratch.height=H; }
+  sctx.setTransform(1,0,0,1,0,0);
+  sctx.clearRect(0,0,W,H);
+  sctx.imageSmoothingQuality = "high";
+  sctx.save();
+  sctx.translate(W/2 + st.tx, H/2 + st.ty);
+  sctx.rotate(st.rot);
+  sctx.scale(st.sx, st.sy);
+  sctx.translate(-W/2, -H/2);
+  drawImageLayer(sctx, st, W, H);
+  sctx.restore();
+
+  ctx.save();
+  clipShape(ctx, W, H);
+  if(st.rgb > 0.4){
+    const d = st.rgb;
+    if(comp.width!==W || comp.height!==H){ comp.width=W; comp.height=H; }
+    cctx.setTransform(1,0,0,1,0,0);
+    cctx.clearRect(0,0,W,H);
+    cctx.globalCompositeOperation = "lighter";
+    cctx.drawImage(channel(scratch,"#ff0000",W,H), -d, 0);
+    cctx.drawImage(channel(scratch,"#00ffff",W,H),  d, 0);
+    cctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(comp, 0, 0);
+  }else{
+    ctx.drawImage(scratch, 0, 0);
+  }
+  ctx.restore();
+}
+
+function drawCover(ctx, img, W, H){
+  const s = Math.max(W/img.naturalWidth, H/img.naturalHeight);
+  const dw = img.naturalWidth*s, dh = img.naturalHeight*s;
+  ctx.drawImage(img, W/2-dw/2, H/2-dh/2, dw, dh);
+}
+
+function clipShape(ctx, W, H){
+  if(S.shape === "circle"){
+    ctx.beginPath(); ctx.ellipse(W/2,H/2,W/2,H/2,0,0,TAU); ctx.clip();
+  }else if(S.shape === "round"){
+    const r = Math.min(W,H)*0.12;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.arcTo(W,0,W,H,r); ctx.arcTo(W,H,0,H,r);
+    ctx.arcTo(0,H,0,0,r); ctx.arcTo(0,0,W,0,r); ctx.closePath(); ctx.clip();
+  }
+}
+
+function channel(src, color, W, H){
+  if(tmp.width!==W || tmp.height!==H){ tmp.width=W; tmp.height=H; }
+  tctx.setTransform(1,0,0,1,0,0);
+  tctx.globalCompositeOperation = "source-over";
+  tctx.clearRect(0,0,W,H);
+  tctx.drawImage(src,0,0);
+  tctx.globalCompositeOperation = "multiply";
+  tctx.fillStyle = color; tctx.fillRect(0,0,W,H);
+  tctx.globalCompositeOperation = "destination-in";
+  tctx.drawImage(src,0,0);
+  tctx.globalCompositeOperation = "source-over";
+  return tmp;
+}
+
+function drawImageLayer(g, st, W, H){
+  const v = S.view, img = S.img;
+  const pk = 1 - S.pad/100*2;
+  if(S.pad>0){ g.translate(W/2,H/2); g.scale(pk,pk); g.translate(-W/2,-H/2); }
+
+  const dw = img.naturalWidth*v.scale, dh = img.naturalHeight*v.scale;
+
+  if(st.rows.length === 0){
+    g.drawImage(img, v.x, v.y, dw, dh);
+    return;
+  }
+  /* 젤리/물결/글리치용 가로줄 변위 — 이미지 영역만 촘촘하고 겹치게 잘라서 그림 */
+  const N = clamp(Math.round(dh/3), 48, 160);
+  const rowH = dh/N;
+  const srcRowH = img.naturalHeight/N;
+  for(let i=0;i<N;i++){
+    const yn = (i+0.5)/N;
+    let ox=0;
+    for(const fn of st.rows) ox += fn(yn);
+    g.drawImage(img,
+      0, i*srcRowH, img.naturalWidth, srcRowH + (i<N-1 ? srcRowH*0.35 : 0),
+      v.x+ox, v.y+i*rowH, dw, rowH + (i<N-1 ? rowH*0.35 : 0));
+  }
+}
+
+/* ============================================================
+   재생 루프 (항상 재생, GIF와 동일하게 프레임 단위 스냅)
+   ============================================================ */
+let t0 = performance.now();
+function phase(now){ return (now - t0)/1000/S.dur % 1; }
+function loop(now){
+  const F = frames();
+  const t = Math.floor(phase(now)*F)/F;
+  render(vctx, t, S.W, S.H);
+  requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   이미지 불러오기
+   ============================================================ */
+function loadImage(f, cb){
+  if(!f || !f.type.startsWith("image/")) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const im = new Image();
+    im.onload = () => cb(im, f.name);
+    im.onerror = () => alert("이미지를 열 수 없어요. 다른 파일로 시도해 주세요.");
+    im.src = e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function setMain(im){
+  S.img = im;
+  $("#view").classList.remove("hidden");
+  $("#empty").style.display = "none";
+  $("#swap").style.display = "";
+  resize(); fitView();
+}
+function setBg(im, name){
+  S.bgimg = im;
+  $("#bgname").textContent = name || "배경 이미지";
+  $("#bgchip").style.display = "flex";
+  clampView();
+}
+
+/* ============================================================
+   조작 (이동 / 확대)
+   ============================================================ */
+const holder = $("#holder");
+let ptrs = new Map(), last=null, pinch=null;
+function toCanvas(e){
+  const r = view.getBoundingClientRect();
+  return { x:(e.clientX-r.left)*(S.W/r.width), y:(e.clientY-r.top)*(S.H/r.height) };
+}
+view.addEventListener("pointerdown", e => {
+  view.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId, e);
+  if(ptrs.size===1){ last = toCanvas(e); view.classList.add("grabbing"); }
+  else if(ptrs.size===2){ pinch = pinchState(); }
+});
+view.addEventListener("pointermove", e => {
+  if(!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, e);
+  if(ptrs.size===1 && last){
+    const p = toCanvas(e);
+    S.view.x += p.x-last.x; S.view.y += p.y-last.y;
+    last = p; clampView();
+  }else if(ptrs.size===2 && pinch){
+    const cur = pinchState();
+    zoomAt(cur.c, cur.d/pinch.d);
+    pinch = cur;
+  }
+});
+function pinchState(){
+  const a = [...ptrs.values()];
+  const p1 = toCanvas(a[0]), p2 = toCanvas(a[1]);
+  return { d:Math.hypot(p1.x-p2.x,p1.y-p2.y)||1, c:{x:(p1.x+p2.x)/2,y:(p1.y+p2.y)/2} };
+}
+function endPtr(e){
+  ptrs.delete(e.pointerId);
+  if(ptrs.size<2) pinch=null;
+  if(ptrs.size===0){ last=null; view.classList.remove("grabbing"); }
+}
+view.addEventListener("pointerup", endPtr);
+view.addEventListener("pointercancel", endPtr);
+view.addEventListener("wheel", e => {
+  e.preventDefault();
+  zoomAt(toCanvas(e), Math.exp(-e.deltaY*0.0016));
+}, {passive:false});
+view.addEventListener("dblclick", fitView);
+function zoomAt(p, k){
+  if(!S.img) return;
+  const old = S.view.scale;
+  const ns = clamp(old*k, minScale(), Math.max(minScale(),1)*14);
+  S.view.x = p.x - (p.x - S.view.x)*ns/old;
+  S.view.y = p.y - (p.y - S.view.y)*ns/old;
+  S.view.scale = ns;
+  clampView();
+}
+
+["dragenter","dragover"].forEach(t => holder.addEventListener(t, e => {
+  e.preventDefault(); holder.classList.add("drag");
+}));
+["dragleave","drop"].forEach(t => holder.addEventListener(t, e => {
+  e.preventDefault(); holder.classList.remove("drag");
+}));
+holder.addEventListener("drop", e => {
+  const f = e.dataTransfer.files[0];
+  if(f) loadImage(f, setMain);
+});
+window.addEventListener("paste", e => {
+  for(const it of (e.clipboardData?.items||[])){
+    if(it.type.startsWith("image/")){ loadImage(it.getAsFile(), setMain); break; }
+  }
+});
+$("#pick").onclick = () => $("#file").click();
+$("#swap").onclick = () => $("#file").click();
+$("#file").onchange = e => { loadImage(e.target.files[0], setMain); e.target.value=""; };
+$("#bgpick").onclick = () => $("#bgfile").click();
+$("#bgfile").onchange = e => { loadImage(e.target.files[0], setBg); e.target.value=""; };
+$("#bgclear").onclick = () => { S.bgimg = null; $("#bgchip").style.display = "none"; clampView(); };
+
+/* ============================================================
+   UI
+   ============================================================ */
+function resize(){
+  const [a,b] = S.ratio.split(":").map(Number);
+  if(a>=b){ S.W = S.size; S.H = Math.round(S.size*b/a); }
+  else    { S.H = S.size; S.W = Math.round(S.size*a/b); }
+  view.width = S.W; view.height = S.H;
+  out.width = S.W; out.height = S.H;
+  clampView();
+}
+
+const grid = $("#fxgrid");
+EFFECTS.forEach(e => {
+  S.fx[e.id] = {on:false, i:e.d.i, s:e.d.s};
+  const b = document.createElement("button");
+  b.className = "fxbtn"; b.setAttribute("aria-pressed","false"); b.dataset.id = e.id;
+  b.innerHTML = '<span class="ico ' + e.anim + '">' + e.ico + '</span><span class="nm">' + e.name + '</span>';
+  b.onclick = () => { S.fx[e.id].on = !S.fx[e.id].on; syncFx(); };
+  grid.appendChild(b);
+});
+const presetBar = $("#presets");
+PRESETS.forEach(p => {
+  const b = document.createElement("button");
+  b.className = "chip"; b.textContent = p.n;
+  b.onclick = () => {
+    EFFECTS.forEach(e => S.fx[e.id].on = false);
+    for(const k in p.fx){ S.fx[k] = {on:true, i:p.fx[k].i, s:p.fx[k].s}; }
+    syncFx();
+  };
+  presetBar.appendChild(b);
+});
+
+function syncFx(){
+  const act = activeFx();
+  document.querySelectorAll(".fxbtn").forEach(b =>
+    b.setAttribute("aria-pressed", S.fx[b.dataset.id].on ? "true":"false"));
+  $("#fxcount").textContent = act.length ? act.length + "개 켜짐" : "";
+  $("#fxempty").style.display = act.length ? "none" : "block";
+
+  const box = $("#tuners"); box.innerHTML = "";
+  act.forEach(e => {
+    const d = document.createElement("div");
+    d.className = "tuner";
+    d.innerHTML =
+      '<div class="tname"><span class="dot"></span>' + e.name +
+      '<button class="off" data-off="' + e.id + '">끄기</button></div>' +
+      slider(e.id,"i","세기") + slider(e.id,"s","속도");
+    box.appendChild(d);
+  });
+  box.querySelectorAll("[data-off]").forEach(b =>
+    b.onclick = () => { S.fx[b.dataset.off].on = false; syncFx(); });
+  box.querySelectorAll("input[type=range]").forEach(r => {
+    r.oninput = () => {
+      S.fx[r.dataset.fx][r.dataset.key] = +r.value;
+      r.nextElementSibling.textContent = r.value;
+      clampView();
+    };
+  });
+  clampView();
+}
+function slider(id, key, label){
+  const v = S.fx[id][key];
+  return '<div class="slider"><label>' + label + '</label>' +
+    '<input type="range" min="0" max="100" value="' + v + '" data-fx="' + id + '" data-key="' + key + '">' +
+    '<output>' + v + '</output></div>';
+}
+
+function seg(sel, attr, fn){
+  const box = $(sel);
+  box.querySelectorAll("button").forEach(b => b.onclick = () => {
+    box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    fn(b.dataset[attr]);
+  });
+}
+seg("#ratio","r", v => { S.ratio=v; resize(); fitView(); });
+seg("#shape","s", v => { S.shape=v; });
+seg("#bgmode","m", v => {
+  S.bgmode = v;
+  $("#bgcolorbox").style.display = v==="color" ? "" : "none";
+  $("#bgimagebox").style.display = v==="image" ? "" : "none";
+  $("#bgnonenote").style.display = v==="none" ? "" : "none";
+  clampView();
+});
+
+$("#size").oninput = e => { S.size=+e.target.value; $("#sizev").textContent = S.size+"px"; resize(); };
+$("#dur").oninput  = e => { S.dur=+e.target.value/10; $("#durv").textContent = S.dur.toFixed(1)+"초"; syncTiming(); };
+$("#fps").oninput  = e => { S.fps=+e.target.value; syncTiming(); };
+$("#pad").oninput  = e => { S.pad=+e.target.value; $("#padv").textContent = S.pad+"%"; clampView(); };
+function syncTiming(){
+  $("#fpsv").textContent = S.fps + " · 총 " + frames() + "프레임";
+  t0 = performance.now();
+}
+$("#fit").onclick = fitView;
+$("#bgcolor").oninput = e => { S.bg = e.target.value; };
+
+document.addEventListener("keydown", e => {
+  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if(e.key==="r"||e.key==="R") fitView();
+});
+
+/* ============================================================
+   저장
+   ============================================================ */
+let workerURL = null;
+async function getWorker(){
+  const url = "https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js";
+  if(workerURL) return workerURL;
+  try{
+    const r = await fetch(url);
+    if(r.ok){ workerURL = URL.createObjectURL(await r.blob()); return workerURL; }
+  }catch(err){}
+  return url;
+}
+if(typeof GIF === "undefined"){
+  $("#giferr").style.display = "block";
+  $("#makegif").disabled = true;
+}
+
+$("#makegif").onclick = async () => {
+  if(!S.img) return alert("먼저 이미지를 넣어 주세요.");
+  const btn = $("#makegif");
+  btn.disabled = true; btn.textContent = "만드는 중…";
+  $("#prog").classList.add("on"); setProg(0,"프레임 그리는 중");
+
+  const F = frames(), delay = Math.round(1000/S.fps);
+  const opt = {
+    workers: 4,
+    quality: GIF_QUALITY,
+    width: S.W, height: S.H,
+    workerScript: await getWorker(),
+    dither: false
+  };
+  if(S.bgmode === "none" || S.shape !== "rect") opt.transparent = 0xFF00FF;
+  const gif = new GIF(opt);
+
+  for(let f=0; f<F; f++){
+    render(octx, f/F, S.W, S.H, true);
+    gif.addFrame(octx, {copy:true, delay});
+    setProg(f/F*0.35, "프레임 " + (f+1) + "/" + F);
+    if(f%4===0) await new Promise(r => setTimeout(r,0));
+  }
+  gif.on("progress", p => setProg(0.35 + p*0.65, "압축 중 " + Math.round(p*100) + "%"));
+  gif.on("finished", blob => {
+    const url = URL.createObjectURL(blob);
+    $("#resultimg").src = url;
+    $("#dl").href = url;
+    $("#dl").download = "jiggle-" + Date.now() + ".gif";
+    $("#resultinfo").textContent = S.W + "×" + S.H + " · " + F + "프레임 · " + (blob.size/1024).toFixed(0) + "KB";
+    $("#result").classList.add("on");
+    $("#prog").classList.remove("on");
+    btn.disabled = false; btn.textContent = "GIF 만들기";
+    $("#result").scrollIntoView({behavior:"smooth", block:"nearest"});
+  });
+  gif.render();
+};
+function setProg(v, txt){
+  $("#progbar").style.width = Math.round(v*100) + "%";
+  $("#progtxt").textContent = txt;
+}
+
+$("#makepng").onclick = () => {
+  if(!S.img) return;
+  const F = frames();
+  const t = Math.floor(phase(performance.now())*F)/F;
+  render(octx, t, S.W, S.H);
+  out.toBlob(b => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b); a.download = "jiggle-frame.png"; a.click();
+  });
+};
+
+/* ============================================================
+   시작
+   ============================================================ */
+syncTiming(); resize();
+S.fx.sizzle.on = true; syncFx();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
