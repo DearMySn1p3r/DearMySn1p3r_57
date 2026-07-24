@@ -384,7 +384,7 @@ const S = {
   fps:20, dur:1.0,
   fx:{}
 };
-const GIF_QUALITY = 8;   // 고정 품질
+const GIF_QUALITY = 1;   // 고정 품질 (최고)
 
 const $ = s => document.querySelector(s);
 const clamp = (v,a,b) => v<a?a:(v>b?b:v);
@@ -988,7 +988,10 @@ $("#makegif").onclick = async () => {
     quality: GIF_QUALITY,
     width: S.W, height: S.H,
     workerScript: await getWorker(),
-    dither: false
+    dither: false,
+    /* 프레임마다 팔레트를 새로 만들면 색이 미세하게 흔들려 지직거림 —
+       팔레트 하나를 전체 프레임에 공유해서 노이즈 제거 */
+    globalPalette: true
   };
   const needKey = S.bgmode === "none" || S.shape !== "rect";
   if(needKey) opt.transparent = 0xFF00FF;
