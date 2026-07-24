@@ -274,7 +274,9 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
   <!-- ============ PANEL ============ -->
   <aside>
     <section class="card">
-      <h2>효과 <span class="count" id="fxcount"></span></h2>
+      <h2>효과 <span class="count" id="fxcount"></span>
+        <button class="textbtn" id="fxoff" style="display:none;margin-left:auto">모두 끄기</button>
+      </h2>
       <div class="chips" id="presets"></div>
       <div class="fx" id="fxgrid"></div>
       <div id="tuners"></div>
@@ -888,6 +890,7 @@ function syncFx(){
     b.setAttribute("aria-pressed", S.fx[b.dataset.id].on ? "true":"false"));
   $("#fxcount").textContent = act.length ? act.length + "개 켜짐" : "";
   $("#fxempty").style.display = act.length ? "none" : "block";
+  $("#fxoff").style.display = act.length ? "" : "none";
 
   const box = $("#tuners"); box.innerHTML = "";
   act.forEach(e => {
@@ -910,6 +913,10 @@ function syncFx(){
   });
   clampView();
 }
+$("#fxoff").onclick = () => {
+  EFFECTS.forEach(e => S.fx[e.id].on = false);
+  syncFx();
+};
 function slider(id, key, label){
   const v = S.fx[id][key];
   return '<div class="slider"><label>' + label + '</label>' +
