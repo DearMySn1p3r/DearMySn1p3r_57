@@ -378,7 +378,7 @@ const S = {
   bgmode:"color",    // color | image | none
   bg:"#ffffff",
   pad:0,
-  view:{scale:1,x:0,y:0},
+  view:{user:1,scale:1,x:0,y:0},   /* user: 사용자가 정한 배율, scale: 실제 적용 배율 */
   fps:20, dur:1.0,
   fx:{}
 };
@@ -568,10 +568,21 @@ function minScale(){
   const n = need();
   return Math.max(n.rw/S.img.naturalWidth, n.rh/S.img.naturalHeight);
 }
+/* 효과가 켜지면 필요한 만큼만 화면 중심 기준으로 커지고,
+   효과를 끄면 사용자가 정했던 배율로 되돌아온다 */
+function applyScale(){
+  if(!S.img) return;
+  const eff = Math.max(S.view.user, minScale());
+  if(Math.abs(eff - S.view.scale) > 1e-9){
+    const k = eff/S.view.scale;
+    S.view.x = S.W/2 - (S.W/2 - S.view.x)*k;
+    S.view.y = S.H/2 - (S.H/2 - S.view.y)*k;
+    S.view.scale = eff;
+  }
+}
 function clampView(){
   if(!S.img) return;
-  const ms = minScale();
-  S.view.scale = Math.max(S.view.scale, ms);
+  applyScale();
   if(!lockView()){
     /* 배경 이미지/투명: 이미지가 화면 밖으로 완전히 나가지만 않게 */
     const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
@@ -594,6 +605,7 @@ function fitView(){
   }else{
     sc = Math.min(S.W/iw, S.H/ih) * 0.86;   /* 배경 위에 살짝 여유 있게 */
   }
+  S.view.user = sc;
   S.view.scale = sc;
   S.view.x = S.W/2 - iw*sc/2;
   S.view.y = S.H/2 - ih*sc/2;
@@ -811,6 +823,7 @@ function zoomAt(p, k){
   S.view.x = p.x - (p.x - S.view.x)*ns/old;
   S.view.y = p.y - (p.y - S.view.y)*ns/old;
   S.view.scale = ns;
+  S.view.user = ns;
   clampView();
 }
 
