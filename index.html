@@ -9,7 +9,7 @@
 <meta name="description" content="이미지를 흔들흔들 움직이는 GIF로 만드는 도구. 전부 브라우저 안에서 처리됩니다.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Jua&family=Do+Hyeon&family=Black+Han+Sans&family=Gaegu:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 <style>
@@ -32,17 +32,18 @@ body{
   color:var(--ink);
   font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   font-size:13.5px;line-height:1.55;
-  padding:28px 20px 72px;
+  padding:22px 20px 56px;
   -webkit-font-smoothing:antialiased;
 }
-button,input,select{font-family:inherit;font-size:inherit;color:inherit}
-h1,h2{margin:0;font-weight:600}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:600}
 
 /* ---------- header ---------- */
-.top{max-width:1120px;margin:0 auto 22px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.top{max-width:1320px;margin:0 auto 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
 .wordmark{
   font-family:"Space Grotesk",Pretendard,sans-serif;
-  font-size:clamp(24px,3.4vw,32px);font-weight:700;letter-spacing:-.03em;
+  font-size:clamp(22px,3vw,30px);font-weight:700;letter-spacing:-.03em;
   display:inline-flex;align-items:baseline;gap:2px;
 }
 .wordmark .dot{
@@ -56,25 +57,100 @@ h1,h2{margin:0;font-weight:600}
   74%{transform:translateY(0) scale(1.25,.75)}
 }
 .tagline{color:var(--sub);font-size:13.5px}
+.top .grow{flex:1}
+.tools{display:flex;gap:6px;align-items:center}
+.ibtn{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .12s,transform .05s;
+}
+.ibtn:hover{border-color:var(--faint)}
+.ibtn:active{transform:scale(.97)}
+.ibtn[disabled]{opacity:.35;cursor:not-allowed}
+.ibtn svg{width:17px;height:17px}
 
 /* ---------- layout ---------- */
-.wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:20px;align-items:start}
-@media (max-width:920px){.wrap{grid-template-columns:1fr}}
-
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px}
-.card + .card{margin-top:14px}
-.card > h2{
-  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--faint);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+.app{
+  max-width:1320px;margin:0 auto;
+  display:grid;grid-template-columns:78px 348px minmax(0,1fr);gap:14px;align-items:start;
 }
+.rail{
+  position:sticky;top:20px;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:8px;display:flex;flex-direction:column;gap:3px;
+}
+.rbtn{
+  position:relative;background:none;border:0;border-radius:12px;cursor:pointer;
+  padding:9px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--sub);transition:background .12s,color .12s;
+}
+.rbtn svg{width:21px;height:21px;transition:transform .15s}
+.rbtn span{font-size:11px;font-weight:600;letter-spacing:-.01em}
+.rbtn:hover{color:var(--ink);background:var(--bg)}
+.rbtn[aria-selected=true]{background:var(--accent-soft);color:var(--accent)}
+.rbtn[aria-selected=true] svg{animation:dotb 1.15s cubic-bezier(.3,0,.4,1) infinite;transform-origin:50% 100%}
+.rbtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.rbtn .bdg{
+  position:absolute;top:5px;right:9px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;
+  background:var(--accent);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;display:none;
+}
+.rbtn .bdg.on{display:block}
+.rbtn .bdg.dot{min-width:7px;width:7px;height:7px;padding:0;top:8px;right:16px}
+.rsep{height:1px;background:var(--line);margin:5px 8px}
+
+.panel{
+  position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  scrollbar-width:thin;
+}
+.pane{display:none;padding:18px}
+.pane.on{display:block}
+.pane-h{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.pane-h h2{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.pane-h .count{font-size:12px;font-weight:700}
+.pane-h .grow{flex:1}
+.pane-d{color:var(--sub);font-size:12.5px;margin:0 0 16px}
+
+.blk{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.blk:first-of-type{border-top:0;padding-top:0;margin-top:0}
+.lbl{
+  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.lbl .grow{flex:1}
 .count{color:var(--accent);letter-spacing:0}
+
+.stage{position:sticky;top:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+
+@media (max-width:1060px){
+  .app{grid-template-columns:70px minmax(0,1fr)}
+  .stage{grid-column:1 / -1;order:-1;position:relative;top:0}
+  .panel{position:sticky;top:12px;max-height:calc(100vh - 24px)}
+  .rail{top:12px}
+}
+@media (max-width:640px){
+  body{padding:14px 12px 40px}
+  .app{grid-template-columns:1fr;gap:10px}
+  .stage{position:sticky;top:0;z-index:5;margin:0 -12px;padding:8px 12px 0;background:var(--bg)}
+  .stage .card{padding:10px}
+  .rail{position:static;flex-direction:row;overflow-x:auto;padding:5px;gap:2px;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .rbtn{flex:0 0 auto;min-width:60px;padding:7px 4px 5px}
+  .rsep{display:none}
+  .panel{position:static;max-height:none}
+  #view{max-height:38vh!important}
+  .holder{min-height:220px!important}
+  .tagline{display:none}
+}
 
 /* ---------- stage ---------- */
 .holder{
   position:relative;border-radius:12px;overflow:hidden;
   background:#EFEFEC;
+  background-image:linear-gradient(45deg,#E9E9E5 25%,transparent 25%,transparent 75%,#E9E9E5 75%),linear-gradient(45deg,#E9E9E5 25%,transparent 25%,transparent 75%,#E9E9E5 75%);
+  background-size:18px 18px;background-position:0 0,9px 9px;
   display:flex;align-items:center;justify-content:center;
-  min-height:320px;touch-action:none;
+  min-height:420px;touch-action:none;
 }
 .holder.drag::after{
   content:"놓아서 불러오기";position:absolute;inset:0;
@@ -82,7 +158,7 @@ h1,h2{margin:0;font-weight:600}
   background:rgba(91,91,240,.92);color:#fff;font-weight:600;font-size:15px;
   border-radius:12px;
 }
-#view{display:block;max-width:100%;max-height:min(64vh,640px);cursor:grab}
+#view{display:block;max-width:100%;max-height:min(68vh,680px);cursor:grab;box-shadow:0 6px 28px rgba(27,27,31,.08)}
 #view.grabbing{cursor:grabbing}
 #view.hidden{display:none}
 
@@ -96,10 +172,21 @@ h1,h2{margin:0;font-weight:600}
 .empty .big{font-size:16px;font-weight:600;margin-bottom:5px}
 .empty p{color:var(--sub);margin:0 0 18px}
 
-.stagefoot{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--sub);font-size:12px;flex-wrap:wrap}
-.stagefoot .grow{flex:1}
-.kbd{display:flex;gap:12px;flex-wrap:wrap}
-.kbd b{font-weight:600;color:var(--ink)}
+.bar{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bar .grow{flex:1}
+.play{
+  width:34px;height:34px;border-radius:50%;border:0;background:var(--ink);color:#fff;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+}
+.play svg{width:14px;height:14px}
+.scrub{flex:1;min-width:120px;display:flex;align-items:center;gap:9px}
+.scrub output{font-size:11.5px;color:var(--sub);font-variant-numeric:tabular-nums;min-width:46px;text-align:right}
+.zoom{display:flex;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:2px}
+.zoom button{background:none;border:0;border-radius:7px;width:28px;height:26px;cursor:pointer;font-weight:700;color:var(--sub)}
+.zoom button:hover{background:#fff;color:var(--ink)}
+.zoom output{font-size:11.5px;font-weight:600;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+.hint{display:flex;gap:12px;flex-wrap:wrap;color:var(--sub);font-size:12px;margin-top:10px}
+.hint b{font-weight:600;color:var(--ink)}
 .textbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:12px}
 .textbtn:hover{text-decoration:underline}
 
@@ -113,30 +200,51 @@ h1,h2{margin:0;font-weight:600}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.solid{background:var(--ink);border-color:var(--ink);color:#fff}
 .btn.solid:hover{background:#000}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.acc:hover{background:#4A4AE0}
 .btn.go{background:var(--accent);border-color:var(--accent);color:#fff;width:100%;font-size:14.5px;padding:12px}
 .btn.go:hover{background:#4A4AE0}
 .btn.mini{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn.wide{width:100%}
 .btn[disabled]{opacity:.45;cursor:not-allowed}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 /* ---------- fields ---------- */
-.field{margin-bottom:14px}
+.field{margin-bottom:13px}
 .field:last-child{margin-bottom:0}
-.field > label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:7px}
+.field > label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:6px}
 .field > label span{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
 input[type=color]{
-  width:34px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer;
+  width:34px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer;flex:none;
 }
 input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
 input[type=color]::-webkit-color-swatch{border:none;border-radius:5px}
+.crow{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;color:var(--sub);margin-bottom:10px}
+.crow .grow{flex:1}
+.inp{
+  width:100%;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg);
+  padding:9px 11px;outline:none;transition:border-color .12s,background .12s;
+}
+.inp:focus{border-color:var(--accent);background:#fff}
+textarea.inp{resize:vertical;min-height:62px;line-height:1.45}
 
 .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);padding:3px;gap:2px}
 .seg button{
-  flex:1;background:none;border:0;border-radius:7px;padding:6px 4px;
-  font-weight:600;font-size:12px;color:var(--sub);cursor:pointer;transition:background .12s,color .12s;
+  flex:1;background:none;border:0;border-radius:7px;padding:6px 2px;
+  font-weight:600;font-size:12px;color:var(--sub);cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;
 }
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(27,27,31,.10)}
+
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.opts.c3{grid-template-columns:repeat(3,1fr)}
+.opt{
+  background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  padding:8px 4px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;transition:all .12s;text-align:center;
+}
+.opt:hover{border-color:var(--faint);color:var(--ink)}
+.opt[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;cursor:pointer;margin:0}
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--line);border-radius:4px}
@@ -149,6 +257,19 @@ input[type=range]:hover::-webkit-slider-thumb,input[type=range]:active::-webkit-
 input[type=range]::-moz-range-track{height:4px;background:var(--line);border-radius:4px}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:1.5px solid var(--faint)}
 
+.sw{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12.5px;font-weight:600;cursor:pointer;padding:5px 0}
+.sw small{display:block;color:var(--faint);font-weight:500;font-size:11.5px}
+.sw input{
+  -webkit-appearance:none;appearance:none;width:34px;height:20px;border-radius:20px;background:var(--line);
+  position:relative;cursor:pointer;transition:background .15s;flex:none;margin:0;
+}
+.sw input::after{
+  content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(27,27,31,.2);transition:transform .15s;
+}
+.sw input:checked{background:var(--accent)}
+.sw input:checked::after{transform:translateX(14px)}
+
 .filechip{
   display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
   border-radius:var(--r-sm);padding:7px 10px;font-size:12px;color:var(--sub);
@@ -158,21 +279,27 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .filechip .x:hover{color:var(--ink)}
 
 /* ---------- effects ---------- */
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{
   background:var(--bg);border:1px solid var(--line);border-radius:20px;
   padding:4px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;
   transition:all .12s;
 }
 .chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.chip.dice{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.dice:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip .del{margin-left:6px;color:var(--faint);font-weight:700}
+.chip .del:hover{color:var(--ink)}
 
-.fx{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.glbl{font-size:11.5px;font-weight:700;color:var(--sub);margin:14px 0 7px}
+.glbl:first-child{margin-top:0}
+.fx{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .fxbtn{
   background:var(--bg);border:1px solid var(--line);border-radius:12px;
-  padding:10px 4px 9px;cursor:pointer;text-align:center;transition:all .12s;
+  padding:9px 2px 8px;cursor:pointer;text-align:center;transition:all .12s;
 }
 .fxbtn .ico{font-size:17px;display:block;line-height:1.25;color:var(--sub);will-change:transform;animation-play-state:paused}
-.fxbtn .nm{font-size:11px;font-weight:600;color:var(--sub);display:block;margin-top:3px;letter-spacing:-.01em}
+.fxbtn .nm{font-size:11px;font-weight:600;color:var(--sub);display:block;margin-top:3px;letter-spacing:-.02em;white-space:nowrap}
 .fxbtn:hover{border-color:var(--faint)}
 .fxbtn:hover .ico{animation-play-state:running}
 .fxbtn[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent)}
@@ -207,16 +334,38 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 @keyframes spn{to{transform:rotate(360deg)}}
 .a-glitch{animation:gl .32s steps(1,end) infinite}
 @keyframes gl{0%{transform:translateX(0)}30%{transform:translateX(-3px) skewX(7deg)}60%{transform:translateX(3px)}}
+.a-float{animation:flt 1.8s ease-in-out infinite}
+@keyframes flt{0%,100%{transform:translateY(2px) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+.a-hang{animation:hng 1.3s ease-in-out infinite;transform-origin:50% 0}
+@keyframes hng{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(16deg)}}
+.a-sway{animation:swy 1.3s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes swy{0%,100%{transform:skewX(-12deg)}50%{transform:skewX(12deg)}}
+.a-stomp{animation:stmp 1s ease-in infinite;transform-origin:50% 100%}
+@keyframes stmp{0%{transform:translateY(0)}30%{transform:translateY(-7px)}45%{transform:translateY(0) scale(1.25,.75)}60%{transform:scale(1,1)}100%{transform:translateY(0)}}
+.a-flip{animation:flp 1.2s ease-in-out infinite}
+@keyframes flp{0%,100%{transform:scaleX(1)}50%{transform:scaleX(-1)}}
+.a-ghost{animation:gst .9s ease-in-out infinite}
+@keyframes gst{0%,100%{transform:translateX(-2px);text-shadow:3px 0 0 rgba(91,91,240,.3)}50%{transform:translateX(2px);text-shadow:-3px 0 0 rgba(91,91,240,.3)}}
+.a-rainbow{animation:rbw 1.6s linear infinite}
+@keyframes rbw{0%{color:#FF5C8A}25%{color:#FFB547}50%{color:#3CC98A}75%{color:#4A8BFF}100%{color:#FF5C8A}}
+.a-blink{animation:blk .6s steps(1,end) infinite}
+@keyframes blk{0%{opacity:1}50%{opacity:.15}}
 
-.tuner{margin-top:14px;border-top:1px solid var(--line);padding-top:13px}
-.tuner .tname{font-weight:600;font-size:12.5px;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.tuner{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:11px 12px 8px;background:#fff}
+.tuner .tname{font-weight:600;font-size:12.5px;margin-bottom:7px;display:flex;align-items:center;gap:7px}
 .tuner .tname .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 .tuner .off{margin-left:auto;background:none;border:0;color:var(--faint);font-size:11.5px;font-weight:600;cursor:pointer;padding:2px 4px}
 .tuner .off:hover{color:var(--ink)}
 .slider{display:grid;grid-template-columns:36px 1fr 30px;align-items:center;gap:9px;margin-bottom:2px}
 .slider label{font-size:11px;font-weight:600;color:var(--sub)}
 .slider output{font-size:11px;font-variant-numeric:tabular-nums;text-align:right;color:var(--sub)}
+.slider input[type=color],.slider .inp{grid-column:2 / 4}
+.slider .inp{padding:5px 9px;font-size:14px}
 .muted{color:var(--faint);font-size:12px;margin:10px 0 0}
+.tunerhead{display:flex;align-items:center;margin-top:16px}
+.tunerhead .lbl{margin:0}
+
+.fontopt{font-size:15px!important;padding:9px 2px!important;font-weight:400!important}
 
 /* ---------- export ---------- */
 .prog{margin-top:12px;border-radius:8px;overflow:hidden;height:26px;background:var(--bg);position:relative;display:none;border:1px solid var(--line)}
@@ -226,11 +375,11 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 
 .result{display:none;margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);text-align:center}
 .result.on{display:block}
-.result img{max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;background:#fff}
+.result img,.result video{max-width:100%;border-radius:8px;display:block;margin:0 auto 10px;background:#fff}
 .result .muted{margin-top:8px}
 .warn{font-size:12px;color:#9A6700;background:#FFF6E0;border:1px solid #F2DFAE;border-radius:8px;padding:8px 10px;margin-top:10px}
 
-.foot{max-width:1120px;margin:32px auto 0;color:var(--faint);font-size:12px;text-align:center}
+.foot{max-width:1320px;margin:28px auto 0;color:var(--faint);font-size:12px;text-align:center}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 @media (prefers-reduced-motion:reduce){
@@ -241,13 +390,336 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 <body>
 
 <header class="top">
-  <h1 class="wordmark">Jiggle Jiggle Studio<span class="dot"></span></h1>
-  <div class="tagline">이미지 한 장을 움직이는 GIF로</div>
+  <div class="brand">
+    <h1 class="wordmark">Jiggle Jiggle Studio<span class="dot"></span></h1>
+    <div class="tagline">이미지 한 장을 움직이는 GIF로</div>
+  </div>
+  <span class="grow"></span>
+  <div class="tools">
+    <button class="ibtn" id="undo" title="실행 취소 (Ctrl/⌘+Z)" aria-label="실행 취소" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+    </button>
+    <button class="ibtn" id="redo" title="다시 실행 (Ctrl/⌘+Shift+Z)" aria-label="다시 실행" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>
+    </button>
+    <button class="btn acc" id="topmake">GIF 만들기</button>
+  </div>
 </header>
 
-<div class="wrap">
+<div class="app">
+  <!-- ============ RAIL ============ -->
+  <nav class="rail" id="rail" role="tablist" aria-label="메뉴">
+    <button class="rbtn" data-p="fx" role="tab" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M3 18c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0" opacity=".45"/><path d="M3 6c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0" opacity=".45"/></svg>
+      <span>움직임</span><i class="bdg" data-b="fx"></i>
+    </button>
+    <button class="rbtn" data-p="deco" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M10 3c.6 3.6 2.4 5.4 6 6-3.6.6-5.4 2.4-6 6-.6-3.6-2.4-5.4-6-6 3.6-.6 5.4-2.4 6-6Z"/><path d="M18 14c.3 1.8 1.2 2.7 3 3-1.8.3-2.7 1.2-3 3-.3-1.8-1.2-2.7-3-3 1.8-.3 2.7-1.2 3-3Z"/></svg>
+      <span>꾸미기</span><i class="bdg" data-b="deco"></i>
+    </button>
+    <button class="rbtn" data-p="text" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V5h12v2"/><path d="M10 5v14"/><path d="M7.5 19h5"/><path d="M15 12h6M18 12v7"/></svg>
+      <span>글자</span><i class="bdg dot" data-b="text"></i>
+    </button>
+    <button class="rbtn" data-p="color" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17Z" fill="currentColor" stroke="none"/></svg>
+      <span>색감</span><i class="bdg dot" data-b="color"></i>
+    </button>
+    <div class="rsep"></div>
+    <button class="rbtn" data-p="image" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 4.5-4.5 3.5 3.5 2.5-2.5L20 19"/></svg>
+      <span>이미지</span><i class="bdg dot" data-b="image"></i>
+    </button>
+    <button class="rbtn" data-p="bg" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M3.5 12h17M12 3.5v17" opacity=".5"/><path d="M3.5 3.5h8.5v8.5H3.5zM12 12h8.5v8.5H12z" fill="currentColor" stroke="none" opacity=".35"/></svg>
+      <span>배경</span>
+    </button>
+    <button class="rbtn" data-p="canvas" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 3v14a1 1 0 0 0 1 1h13"/><path d="M3 7h13a1 1 0 0 1 1 1v13"/></svg>
+      <span>캔버스</span>
+    </button>
+    <div class="rsep"></div>
+    <button class="rbtn" data-p="save" role="tab" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+      <span>저장</span>
+    </button>
+  </nav>
+
+  <!-- ============ PANEL ============ -->
+  <aside class="panel" id="panel">
+
+    <!-- 움직임 -->
+    <section class="pane on" data-pane="fx">
+      <div class="pane-h"><h2>움직임</h2><span class="count" id="fxcount"></span><span class="grow"></span>
+        <button class="textbtn" id="fxoff" style="display:none">모두 끄기</button></div>
+      <p class="pane-d">눌러서 켜고, 여러 개를 겹칠 수 있어요.</p>
+      <div class="blk">
+        <div class="lbl">빠른 조합</div>
+        <div class="chips" id="presets"></div>
+      </div>
+      <div class="blk" id="fxlib"></div>
+      <div id="tunerwrap" style="display:none">
+        <div class="tunerhead"><div class="lbl">켜진 효과 조절</div></div>
+        <div id="tuners"></div>
+      </div>
+    </section>
+
+    <!-- 꾸미기 -->
+    <section class="pane" data-pane="deco">
+      <div class="pane-h"><h2>꾸미기</h2><span class="count" id="decocount"></span><span class="grow"></span>
+        <button class="textbtn" id="decooff" style="display:none">모두 끄기</button></div>
+      <p class="pane-d">은은한 빛과 입자를 얹어요. 모두 부드럽게 나타났다 사라지고, 루프가 끊기지 않아요.</p>
+      <div class="blk">
+        <div class="field">
+          <div class="seg" data-k="decoLayer">
+            <button data-v="front">이미지 앞에</button>
+            <button data-v="back">이미지 뒤에</button>
+          </div>
+        </div>
+        <button class="btn mini" id="reseed">⟳ 위치 다시 뿌리기</button>
+      </div>
+      <div class="blk">
+        <div class="fx" id="decogrid"></div>
+      </div>
+      <div id="decotunerwrap" style="display:none">
+        <div class="tunerhead"><div class="lbl">켜진 꾸미기 조절</div></div>
+        <div id="decotuners"></div>
+      </div>
+    </section>
+
+    <!-- 글자 -->
+    <section class="pane" data-pane="text">
+      <div class="pane-h"><h2>글자</h2><span class="grow"></span>
+        <button class="textbtn" id="textclear">지우기</button></div>
+      <p class="pane-d">짤 문구를 얹어요. 줄바꿈도 돼요.</p>
+      <div class="blk">
+        <textarea class="inp" data-k="text.str" placeholder="예) 일하기 싫다…" rows="2"></textarea>
+      </div>
+      <div class="blk">
+        <div class="lbl">글꼴</div>
+        <div class="opts c3" data-k="text.font" id="fontopts"></div>
+      </div>
+      <div class="blk">
+        <div class="field"><label>크기 <span data-o="text.size"></span></label>
+          <input type="range" data-k="text.size" min="14" max="160" step="1"></div>
+        <div class="crow">글자색 <input type="color" data-k="text.color" aria-label="글자색">
+          <span class="grow"></span>테두리 <input type="color" data-k="text.stroke" aria-label="테두리색"></div>
+        <div class="field"><label>테두리 두께 <span data-o="text.sw"></span></label>
+          <input type="range" data-k="text.sw" min="0" max="16" step="1"></div>
+        <label class="sw">그림자<input type="checkbox" data-k="text.shadow"></label>
+      </div>
+      <div class="blk">
+        <div class="lbl">위치</div>
+        <div class="row2" style="margin-bottom:10px">
+          <div class="seg" id="tpos">
+            <button data-y="14">위</button><button data-y="50">가운데</button><button data-y="86">아래</button>
+          </div>
+          <button class="btn mini" id="tcenter">가로 중앙</button>
+        </div>
+        <div class="field"><label>가로 <span data-o="text.x"></span></label>
+          <input type="range" data-k="text.x" min="0" max="100" step="1"></div>
+        <div class="field"><label>세로 <span data-o="text.y"></span></label>
+          <input type="range" data-k="text.y" min="0" max="100" step="1"></div>
+      </div>
+      <div class="blk">
+        <div class="lbl">글자 움직임</div>
+        <div class="opts" data-k="text.anim">
+          <button class="opt" data-v="none">없음</button>
+          <button class="opt" data-v="bounce">통통</button>
+          <button class="opt" data-v="shake">흔들</button>
+          <button class="opt" data-v="pulse">두근</button>
+          <button class="opt" data-v="wave">웨이브</button>
+          <button class="opt" data-v="sizzle">짜글</button>
+          <button class="opt" data-v="type">타자</button>
+          <button class="opt" data-v="rainbow">무지개</button>
+        </div>
+        <div class="field" style="margin-top:12px"><label>움직임 세기 <span data-o="text.ai"></span></label>
+          <input type="range" data-k="text.ai" min="0" max="100" step="1"></div>
+      </div>
+    </section>
+
+    <!-- 색감 -->
+    <section class="pane" data-pane="color">
+      <div class="pane-h"><h2>색감</h2><span class="grow"></span>
+        <button class="textbtn" id="colreset">초기화</button></div>
+      <p class="pane-d">앞 이미지의 색을 바꿔요. 배경과 글자는 그대로예요.</p>
+      <div class="blk">
+        <div class="lbl">필터</div>
+        <div class="opts c3" data-k="col.preset" id="colopts"></div>
+      </div>
+      <div class="blk">
+        <div class="field"><label>밝기 <span data-o="col.bri"></span></label><input type="range" data-k="col.bri" min="-50" max="50"></div>
+        <div class="field"><label>대비 <span data-o="col.con"></span></label><input type="range" data-k="col.con" min="-50" max="50"></div>
+        <div class="field"><label>채도 <span data-o="col.sat"></span></label><input type="range" data-k="col.sat" min="-100" max="100"></div>
+        <div class="field"><label>색온도 <span data-o="col.temp"></span></label><input type="range" data-k="col.temp" min="-50" max="50"></div>
+        <div class="field"><label>색조 <span data-o="col.hue"></span></label><input type="range" data-k="col.hue" min="-180" max="180"></div>
+      </div>
+      <div class="blk">
+        <div class="lbl">질감</div>
+        <div class="field"><label>비네팅 <span data-o="col.vig"></span></label><input type="range" data-k="col.vig" min="0" max="100"></div>
+        <div class="field"><label>필름 노이즈 <span data-o="col.grain"></span></label><input type="range" data-k="col.grain" min="0" max="100"></div>
+        <p class="muted">노이즈는 매 프레임 달라져서 GIF 용량이 커질 수 있어요.</p>
+      </div>
+    </section>
+
+    <!-- 이미지 -->
+    <section class="pane" data-pane="image">
+      <div class="pane-h"><h2>이미지</h2></div>
+      <p class="pane-d">움직이는 앞 이미지를 다듬어요.</p>
+      <div class="blk">
+        <div class="row2">
+          <button class="btn mini" id="swap2">이미지 바꾸기</button>
+          <button class="btn mini" id="fit2">화면에 맞추기</button>
+        </div>
+      </div>
+      <div class="blk">
+        <label class="sw"><div>캔버스 꽉 채우기<small>효과가 움직여도 빈틈이 안 보이게 키워요</small></div><input type="checkbox" data-k="cover"></label>
+        <label class="sw">좌우 뒤집기<input type="checkbox" data-k="flip"></label>
+        <div class="field" style="margin-top:8px"><label>불투명도 <span data-o="opacity"></span></label>
+          <input type="range" data-k="opacity" min="10" max="100"></div>
+      </div>
+      <div class="blk">
+        <div class="lbl">스티커 효과</div>
+        <div class="field"><label>외곽선 <span data-o="outline"></span></label>
+          <input type="range" data-k="outline" min="0" max="16"></div>
+        <div class="crow">외곽선 색 <span class="grow"></span><input type="color" data-k="ocolor" aria-label="외곽선 색"></div>
+        <div class="field"><label>그림자 <span data-o="shadow"></span></label>
+          <input type="range" data-k="shadow" min="0" max="40"></div>
+        <p class="muted">외곽선은 투명 PNG에서 잘 보여요.</p>
+      </div>
+    </section>
+
+    <!-- 배경 -->
+    <section class="pane" data-pane="bg">
+      <div class="pane-h"><h2>배경</h2></div>
+      <p class="pane-d">배경은 움직이지 않고(패턴은 흐르게 할 수 있어요), 앞의 이미지만 흔들려요.</p>
+      <div class="blk">
+        <div class="seg" data-k="bgmode">
+          <button data-v="color">색상</button>
+          <button data-v="gradient">그라데</button>
+          <button data-v="pattern">패턴</button>
+          <button data-v="image">이미지</button>
+          <button data-v="none">투명</button>
+        </div>
+      </div>
+      <div class="blk" id="bg-color">
+        <div class="crow">배경색 <span class="grow"></span><input type="color" data-k="bg" aria-label="배경색"></div>
+      </div>
+      <div class="blk" id="bg-gradient">
+        <div class="crow">시작 <input type="color" data-k="bg" aria-label="시작 색"><span class="grow"></span>끝 <input type="color" data-k="bg2" aria-label="끝 색"></div>
+        <div class="field"><label>각도 <span data-o="gangle"></span></label><input type="range" data-k="gangle" min="0" max="360" step="5"></div>
+      </div>
+      <div class="blk" id="bg-pattern">
+        <div class="opts" data-k="pattern" style="margin-bottom:12px">
+          <button class="opt" data-v="dots">도트</button>
+          <button class="opt" data-v="check">체크</button>
+          <button class="opt" data-v="stripe">줄무늬</button>
+          <button class="opt" data-v="grid">모눈</button>
+        </div>
+        <div class="crow">바탕 <input type="color" data-k="bg" aria-label="바탕색"><span class="grow"></span>무늬 <input type="color" data-k="pcolor" aria-label="무늬색"></div>
+        <div class="field"><label>무늬 크기 <span data-o="psize"></span></label><input type="range" data-k="psize" min="0" max="100"></div>
+        <label class="sw">무늬 흐르게<input type="checkbox" data-k="pscroll"></label>
+      </div>
+      <div class="blk" id="bg-image">
+        <button class="btn mini" id="bgpick">배경 이미지 고르기</button>
+        <div class="filechip" id="bgchip" style="display:none;margin-top:8px">
+          <span class="nm" id="bgname"></span>
+          <button class="x" id="bgclear" aria-label="배경 이미지 제거">✕</button>
+        </div>
+      </div>
+      <div class="blk" id="bg-none">
+        <p class="muted" style="margin:0">투명 GIF로 저장돼요. 스티커나 이모티콘용.</p>
+      </div>
+    </section>
+
+    <!-- 캔버스 -->
+    <section class="pane" data-pane="canvas">
+      <div class="pane-h"><h2>캔버스</h2></div>
+      <p class="pane-d">크기, 모양, 재생 속도를 정해요.</p>
+      <div class="blk">
+        <div class="lbl">비율</div>
+        <div class="field">
+          <div class="seg" data-k="ratio">
+            <button data-v="1:1">1:1</button><button data-v="4:5">4:5</button><button data-v="3:4">3:4</button>
+            <button data-v="9:16">9:16</button><button data-v="16:9">16:9</button>
+          </div>
+        </div>
+        <div class="field"><label>크기 <span data-o="size"></span></label>
+          <input type="range" data-k="size" min="180" max="800" step="20"></div>
+      </div>
+      <div class="blk">
+        <div class="lbl">모양</div>
+        <div class="field">
+          <div class="seg" data-k="shape">
+            <button data-v="rect">사각형</button><button data-v="round">둥근</button>
+            <button data-v="circle">원형</button><button data-v="heart">하트</button>
+          </div>
+        </div>
+        <div class="field"><label>여백 <span data-o="pad"></span></label>
+          <input type="range" data-k="pad" min="0" max="30" step="1"></div>
+      </div>
+      <div class="blk">
+        <div class="lbl">시간</div>
+        <div class="field"><label>한 바퀴 <span data-o="dur"></span></label>
+          <input type="range" data-k="dur" min="0.3" max="4" step="0.1"></div>
+        <div class="field"><label>초당 프레임 <span data-o="fps"></span></label>
+          <input type="range" data-k="fps" min="6" max="30" step="1"></div>
+        <p class="muted">한 바퀴를 길게 하면 꾸미기 입자도 더 천천히 움직여요.</p>
+      </div>
+    </section>
+
+    <!-- 저장 -->
+    <section class="pane" data-pane="save">
+      <div class="pane-h"><h2>저장</h2></div>
+      <p class="pane-d">모든 처리는 브라우저 안에서 이뤄져요.</p>
+      <div class="blk">
+        <div class="lbl">형식</div>
+        <div class="seg" data-k="exp.fmt">
+          <button data-v="gif">GIF</button><button data-v="video">동영상</button><button data-v="png">PNG 한 장</button>
+        </div>
+      </div>
+      <div class="blk" id="opt-gif">
+        <div class="field"><label>반복</label>
+          <div class="seg" data-k="exp.loop">
+            <button data-v="0">무한</button><button data-v="-1">한 번</button><button data-v="2">세 번</button>
+          </div>
+        </div>
+        <div class="field"><label>압축</label>
+          <div class="seg" data-k="exp.q">
+            <button data-v="1">최고 화질</button><button data-v="10">빠르게</button>
+          </div>
+        </div>
+        <label class="sw"><div>디더링<small>그라데이션이 부드러워지지만 용량↑</small></div><input type="checkbox" data-k="exp.dither"></label>
+      </div>
+      <div class="blk" id="opt-video">
+        <div class="field"><label>길이 <span data-o="exp.vloops"></span></label>
+          <input type="range" data-k="exp.vloops" min="1" max="12" step="1"></div>
+        <p class="muted" style="margin:0">브라우저에 따라 MP4 또는 WebM으로 저장돼요. 실제 시간만큼 녹화해요.</p>
+      </div>
+      <div class="blk" id="opt-png">
+        <p class="muted" style="margin:0">지금 보이는 프레임 한 장을 저장해요. 아래 재생바로 멈춰서 고를 수 있어요.</p>
+      </div>
+      <div class="blk">
+        <button class="btn go" id="makegif">GIF 만들기</button>
+        <div class="prog" id="prog"><i id="progbar"></i><span id="progtxt">0%</span></div>
+        <div class="result" id="result">
+          <img id="resultimg" alt="완성된 미리보기">
+          <video id="resultvid" autoplay loop muted playsinline style="display:none"></video>
+          <a class="btn solid" id="dl" download="jiggle.gif" href="#" style="display:inline-block;text-decoration:none">내려받기</a>
+          <div class="muted" id="resultinfo"></div>
+        </div>
+        <div class="warn" id="giferr" style="display:none">GIF 엔진을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.</div>
+      </div>
+      <div class="blk">
+        <div class="lbl">내 조합 <span class="grow"></span><button class="textbtn" id="savecombo" style="letter-spacing:0;text-transform:none">+ 지금 설정 저장</button></div>
+        <div class="chips" id="combos"></div>
+        <p class="muted" id="combonote">효과·꾸미기·글자·색감 설정을 이 브라우저에 저장해 두고 다시 불러올 수 있어요.</p>
+      </div>
+    </section>
+  </aside>
+
   <!-- ============ STAGE ============ -->
-  <main>
+  <main class="stage">
     <section class="card">
       <div class="holder" id="holder">
         <canvas id="view" class="hidden" width="480" height="480"></canvas>
@@ -258,108 +730,31 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
           <button class="btn solid" id="pick">이미지 고르기</button>
         </div>
       </div>
-      <div class="stagefoot">
-        <div class="kbd">
-          <span><b>드래그</b> 이동</span>
-          <span><b>휠·핀치</b> 확대</span>
-          <span><b>더블클릭</b> 맞추기</span>
+      <div class="bar">
+        <button class="play" id="play" aria-label="일시정지">
+          <svg id="icpause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <svg id="icplay" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 4.5v15l13-7.5z"/></svg>
+        </button>
+        <div class="scrub">
+          <input type="range" id="scrub" min="0" max="19" value="0" aria-label="프레임">
+          <output id="frametxt">1/20</output>
         </div>
-        <span class="grow"></span>
-        <button class="textbtn" id="swap" style="display:none">이미지 바꾸기</button>
-        <button class="textbtn" id="fit">화면에 맞추기</button>
+        <div class="zoom">
+          <button id="zout" aria-label="축소">−</button>
+          <output id="zoomtxt">100%</output>
+          <button id="zin" aria-label="확대">+</button>
+        </div>
+        <button class="btn mini" id="fit">맞춤</button>
+        <button class="btn mini" id="swap" style="display:none">바꾸기</button>
+      </div>
+      <div class="hint">
+        <span><b>드래그</b> 이동</span>
+        <span><b>휠·핀치</b> 확대</span>
+        <span><b>더블클릭</b> 맞추기</span>
+        <span><b>Space</b> 재생/정지</span>
       </div>
     </section>
   </main>
-
-  <!-- ============ PANEL ============ -->
-  <aside>
-    <section class="card">
-      <h2>효과 <span class="count" id="fxcount"></span>
-        <button class="textbtn" id="fxoff" style="display:none;margin-left:auto">모두 끄기</button>
-      </h2>
-      <div class="chips" id="presets"></div>
-      <div class="fx" id="fxgrid"></div>
-      <div id="tuners"></div>
-      <p class="muted" id="fxempty">효과를 눌러 켜세요. 여러 개를 겹칠 수 있어요.</p>
-    </section>
-
-    <section class="card">
-      <h2>배경</h2>
-      <div class="field">
-        <div class="seg" id="bgmode">
-          <button data-m="color" aria-pressed="true">색상</button>
-          <button data-m="image" aria-pressed="false">이미지</button>
-          <button data-m="none" aria-pressed="false">투명</button>
-        </div>
-      </div>
-      <div class="field" id="bgcolorbox">
-        <div class="row">
-          <input type="color" id="bgcolor" value="#ffffff" aria-label="배경색">
-          <span class="muted" style="margin:0">GIF 뒤에 깔릴 색</span>
-        </div>
-      </div>
-      <div class="field" id="bgimagebox" style="display:none">
-        <button class="btn mini" id="bgpick">배경 이미지 고르기</button>
-        <div class="filechip" id="bgchip" style="display:none;margin-top:8px">
-          <span class="nm" id="bgname"></span>
-          <button class="x" id="bgclear" aria-label="배경 이미지 제거">✕</button>
-        </div>
-        <p class="muted">배경은 움직이지 않고, 앞의 이미지만 흔들려요.</p>
-      </div>
-      <p class="muted" id="bgnonenote" style="display:none">투명 GIF로 저장돼요. 스티커나 이모티콘용.</p>
-    </section>
-
-    <section class="card">
-      <h2>화면</h2>
-      <div class="field">
-        <div class="seg" id="ratio">
-          <button data-r="1:1" aria-pressed="true">1:1</button>
-          <button data-r="4:5" aria-pressed="false">4:5</button>
-          <button data-r="9:16" aria-pressed="false">9:16</button>
-          <button data-r="16:9" aria-pressed="false">16:9</button>
-        </div>
-      </div>
-      <div class="field">
-        <label for="size">크기 <span id="sizev">480px</span></label>
-        <input id="size" type="range" min="180" max="800" step="20" value="480">
-      </div>
-      <div class="field">
-        <div class="seg" id="shape">
-          <button data-s="rect" aria-pressed="true">사각형</button>
-          <button data-s="round" aria-pressed="false">둥근 모서리</button>
-          <button data-s="circle" aria-pressed="false">원형</button>
-        </div>
-      </div>
-      <div class="field">
-        <label for="pad">여백 <span id="padv">0%</span></label>
-        <input id="pad" type="range" min="0" max="30" step="1" value="0">
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>움직임</h2>
-      <div class="field">
-        <label for="dur">한 바퀴 <span id="durv">1.0초</span></label>
-        <input id="dur" type="range" min="3" max="30" step="1" value="10">
-      </div>
-      <div class="field">
-        <label for="fps">초당 프레임 <span id="fpsv">20 · 총 20프레임</span></label>
-        <input id="fps" type="range" min="6" max="30" step="1" value="20">
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>저장</h2>
-      <button class="btn go" id="makegif">GIF 만들기</button>
-      <div class="prog" id="prog"><i id="progbar"></i><span id="progtxt">0%</span></div>
-      <div class="result" id="result">
-        <img id="resultimg" alt="완성된 GIF 미리보기">
-        <a class="btn solid" id="dl" download="jiggle.gif" href="#" style="display:inline-block;text-decoration:none">내려받기</a>
-        <div class="muted" id="resultinfo"></div>
-      </div>
-      <div class="warn" id="giferr" style="display:none">GIF 엔진을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.</div>
-    </section>
-  </aside>
 </div>
 
 <p class="foot">모든 처리는 브라우저 안에서 이뤄지고, 이미지는 어디에도 업로드되지 않습니다.</p>
@@ -372,37 +767,40 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
    상태
    ============================================================ */
 const S = {
-  img:null,          // 효과가 적용되는 앞 이미지 (PNG면 투명 유지)
-  bgimg:null,        // 움직이지 않는 배경 이미지
+  img:null, bgimg:null,
   W:480, H:480,
-  ratio:"1:1", size:480,
-  shape:"rect",
-  bgmode:"color",    // color | image | none
-  bg:"#ffffff",
-  pad:0,
-  view:{user:1,scale:1,x:0,y:0},   /* user: 사용자가 정한 배율, scale: 실제 적용 배율 */
+  ratio:"1:1", size:480, shape:"rect", pad:0,
+  bgmode:"color", bg:"#ffffff", bg2:"#C9C9FF", gangle:135,
+  pattern:"dots", pcolor:"#E4E4FD", psize:40, pscroll:true,
+  cover:true, flip:false, opacity:100, outline:0, ocolor:"#ffffff", shadow:0,
+  view:{user:1,scale:1,x:0,y:0},
   fps:20, dur:1.0,
-  fx:{}
+  fx:{}, deco:{}, decoLayer:"front", seed:1,
+  text:{str:"", font:"jua", size:56, color:"#ffffff", stroke:"#1B1B1F", sw:6, shadow:false, x:50, y:86, anim:"none", ai:50},
+  col:{preset:"none", bri:0, con:0, sat:0, temp:0, hue:0, vig:0, grain:0},
+  exp:{fmt:"gif", loop:"0", q:"1", dither:false, vloops:3}
 };
-const GIF_QUALITY = 1;   // 고정 품질 (최고)
+let playing = true, curFrame = 0;
 
-const $ = s => document.querySelector(s);
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+const frac = x => x - Math.floor(x);
 const TAU = Math.PI*2;
 function rnd(a,b){ const x = Math.sin(a*127.1 + b*311.7)*43758.5453; return x - Math.floor(x); }
 function rotEx(th,W,H){
   const c=Math.abs(Math.cos(th)), s=Math.abs(Math.sin(th));
   return Math.max((W*c+H*s)/W, (W*s+H*c)/H) - 1;
 }
+const cyc = (p, base=1, span=2) => Math.max(1, Math.round(base + p.s*span));
 
 /* ============================================================
-   효과 정의
+   움직임 효과
    ============================================================ */
+const GROUPS = [["move","흔들기"],["soft","말랑·통통"],["wave","일렁임"],["special","특수"]];
 const EFFECTS = [
-{ id:"sizzle", name:"짜글짜글", ico:"〰", anim:"a-sizzle",
-  d:{i:40,s:40},
-  ex:(p)=>rotEx(0.02*p.i,1,1)+0.015*p.i,
-  sh:(p)=>({x:0.026*p.i, y:0.022*p.i}),
+{ id:"sizzle", g:"move", name:"짜글짜글", ico:"〰", anim:"a-sizzle", d:{i:40,s:40},
+  ex:(p)=>rotEx(0.02*p.i,1,1)+0.015*p.i, sh:(p)=>({x:0.026*p.i, y:0.022*p.i}),
   apply(st,t,p,W,H){
     const steps = Math.max(2, Math.round(2 + p.s*8));
     const k = Math.floor(t*steps);
@@ -414,60 +812,8 @@ const EFFECTS = [
     st.sy *= 1 + (rnd(k,5)*2-1)*0.008*p.i;
   }
 },
-{ id:"squish", name:"말랑말랑", ico:"◗", anim:"a-squish",
-  d:{i:55,s:50},
-  ex:(p)=>0.31*p.i, sh:()=>({x:0,y:0}),
-  apply(st,t,p){
-    const n = Math.round(1 + p.s*2);
-    const s = Math.sin(TAU*t*n);
-    const a = 0.21*p.i;
-    st.sx *= 1 + a*s;
-    st.sy *= 1 - a*s*0.92;
-  }
-},
-{ id:"bounce", name:"통통", ico:"●", anim:"a-bounce",
-  d:{i:55,s:40},
-  ex:(p)=>0.17*p.i, sh:(p)=>({x:0, y:0.12*p.i}),
-  apply(st,t,p,W,H){
-    const n = Math.round(1 + p.s*2);
-    const b = Math.abs(Math.sin(Math.PI*t*n));
-    st.ty -= 0.105*p.i*H*b;
-    const sq = Math.pow(1-b,3);
-    st.sx *= 1 + 0.14*p.i*sq;
-    st.sy *= 1 - 0.14*p.i*sq;
-  }
-},
-{ id:"jelly", name:"젤리", ico:"⌇", anim:"a-jelly",
-  d:{i:40,s:45},
-  ex:()=>0, sh:(p)=>({x:0.043*p.i, y:0}),
-  apply(st,t,p,W){
-    const A = 0.038*p.i*W, w = 1 + p.s*2.5;
-    st.rows.push(yn => A*Math.sin(yn*TAU*w - TAU*t));
-  }
-},
-{ id:"ripple", name:"물결", ico:"≋", anim:"a-ripple",
-  d:{i:40,s:40},
-  ex:()=>0, sh:(p)=>({x:0.05*p.i, y:0}),
-  apply(st,t,p,W){
-    const A = 0.028*p.i*W, k = 3 + p.s*6;
-    st.rows.push(yn => A*(Math.sin(yn*k - TAU*t) + 0.5*Math.sin(yn*k*1.9 + TAU*t*1.5)));
-  }
-},
-{ id:"pulse", name:"두근두근", ico:"♥", anim:"a-pulse",
-  d:{i:55,s:50},
-  ex:()=>0, sh:()=>({x:0,y:0}),
-  apply(st,t,p){
-    const n = Math.round(1 + p.s*2);
-    const u = (t*n)%1;
-    const a = u<0.36 ? Math.sin(u/0.36*Math.PI) : 0;
-    const k = 1 + 0.14*p.i*a;
-    st.sx *= k; st.sy *= k;
-  }
-},
-{ id:"shake", name:"흔들흔들", ico:"⇄", anim:"a-shake",
-  d:{i:40,s:55},
-  ex:(p)=>rotEx(0.022*p.i,1,1),
-  sh:(p)=>({x:0.04*p.i, y:0.02*p.i}),
+{ id:"shake", g:"move", name:"흔들흔들", ico:"⇄", anim:"a-shake", d:{i:40,s:55},
+  ex:(p)=>rotEx(0.022*p.i,1,1), sh:(p)=>({x:0.04*p.i, y:0.02*p.i}),
   apply(st,t,p,W,H){
     const n = Math.round(2 + p.s*10);
     st.tx += 0.035*p.i*W*Math.sin(TAU*t*n);
@@ -475,37 +821,111 @@ const EFFECTS = [
     st.rot += 0.022*p.i*Math.sin(TAU*t*n*0.5);
   }
 },
-{ id:"wobble", name:"갸우뚱", ico:"↺", anim:"a-wobble",
-  d:{i:45,s:40},
+{ id:"wobble", g:"move", name:"갸우뚱", ico:"↺", anim:"a-wobble", d:{i:45,s:40},
   ex:(p,W,H)=>rotEx(0.22*p.i,W,H), sh:()=>({x:0,y:0}),
-  apply(st,t,p){
-    const n = Math.round(1 + p.s*2);
-    st.rot += 0.22*p.i*Math.sin(TAU*t*n);
+  apply(st,t,p){ st.rot += 0.22*p.i*Math.sin(TAU*t*cyc(p)); }
+},
+{ id:"hang", g:"move", name:"대롱대롱", ico:"⚲", anim:"a-hang", d:{i:50,s:25},
+  ex:(p,W,H)=>rotEx(0.25*p.i,W,H),
+  sh:(p,W,H)=>({x:0.5*Math.sin(0.25*p.i)*H/W, y:0.5*(1-Math.cos(0.25*p.i))}),
+  apply(st,t,p,W,H){
+    /* 위쪽 가운데를 축으로 매달린 것처럼 */
+    const th = 0.25*p.i*Math.sin(TAU*t*cyc(p)), h = H/2;
+    st.tx += -h*Math.sin(th);
+    st.ty += h*Math.cos(th) - h;
+    st.rot += th;
   }
 },
-{ id:"breathe", name:"숨쉬기", ico:"◎", anim:"a-breathe",
-  d:{i:40,s:35},
+{ id:"float", g:"move", name:"둥실둥실", ico:"☁", anim:"a-float", d:{i:45,s:20},
+  ex:(p)=>rotEx(0.05*p.i,1,1), sh:(p)=>({x:0.02*p.i, y:0.07*p.i}),
+  apply(st,t,p,W,H){
+    const n = cyc(p);
+    st.ty += 0.06*p.i*H*Math.sin(TAU*t*n);
+    st.tx += 0.015*p.i*W*Math.sin(TAU*t);
+    st.rot += 0.05*p.i*Math.sin(TAU*t*n + 1.2);
+  }
+},
+{ id:"spin", g:"move", name:"빙글빙글", ico:"✦", anim:"a-spin", d:{i:100,s:0},
+  ex:(p,W,H)=>{ const d=Math.hypot(W,H); return Math.max(d/W,d/H)-1+0.02; }, sh:()=>({x:0,y:0}),
+  apply(st,t,p){ st.rot += TAU*t*cyc(p)*(p.i>=0.5?1:-1); }
+},
+{ id:"flip", g:"move", name:"뒤집뒤집", ico:"◧", anim:"a-flip", d:{i:100,s:0},
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){ const c = Math.cos(TAU*t*cyc(p)); st.sx *= 1 - p.i + p.i*c; }
+},
+{ id:"squish", g:"soft", name:"말랑말랑", ico:"◗", anim:"a-squish", d:{i:55,s:50},
+  ex:(p)=>0.31*p.i, sh:()=>({x:0,y:0}),
+  apply(st,t,p){
+    const s = Math.sin(TAU*t*cyc(p)), a = 0.21*p.i;
+    st.sx *= 1 + a*s;
+    st.sy *= 1 - a*s*0.92;
+  }
+},
+{ id:"bounce", g:"soft", name:"통통", ico:"●", anim:"a-bounce", d:{i:55,s:40},
+  ex:(p)=>0.17*p.i, sh:(p)=>({x:0, y:0.12*p.i}),
+  apply(st,t,p,W,H){
+    const b = Math.abs(Math.sin(Math.PI*t*cyc(p)));
+    st.ty -= 0.105*p.i*H*b;
+    const sq = Math.pow(1-b,3);
+    st.sx *= 1 + 0.14*p.i*sq;
+    st.sy *= 1 - 0.14*p.i*sq;
+  }
+},
+{ id:"stomp", g:"soft", name:"쿵쿵", ico:"▼", anim:"a-stomp", d:{i:55,s:0},
+  ex:(p)=>0.24*p.i, sh:(p)=>({x:0, y:0.17*p.i}),
+  apply(st,t,p,W,H){
+    const u = frac(t*cyc(p)), A = 0.16*p.i*H;
+    let y = 0, sq = 0;
+    if(u<0.3){ const k=u/0.3; y = -A*(1-(1-k)*(1-k)); }
+    else if(u<0.42){ const k=(u-0.3)/0.12; y = -A*(1-k*k); }
+    else if(u<0.78){ const k=(u-0.42)/0.36; sq = Math.exp(-k*4)*Math.cos(k*Math.PI*3); }
+    const a = 0.22*p.i*sq;
+    st.ty += y + H/2*a;
+    st.sx *= 1 + a;
+    st.sy *= 1 - a;
+  }
+},
+{ id:"pulse", g:"soft", name:"두근두근", ico:"♥", anim:"a-pulse", d:{i:55,s:50},
   ex:()=>0, sh:()=>({x:0,y:0}),
   apply(st,t,p){
-    const n = Math.round(1 + p.s*2);
-    const k = 1 + 0.11*p.i*(0.5 - 0.5*Math.cos(TAU*t*n));
+    const u = frac(t*cyc(p));
+    const a = u<0.36 ? Math.sin(u/0.36*Math.PI) : 0;
+    const k = 1 + 0.14*p.i*a;
     st.sx *= k; st.sy *= k;
   }
 },
-{ id:"spin", name:"빙글빙글", ico:"✦", anim:"a-spin",
-  d:{i:100,s:40},
-  ex:(p,W,H)=>{ const d=Math.hypot(W,H); return Math.max(d/W,d/H)-1+0.02; },
-  sh:()=>({x:0,y:0}),
+{ id:"breathe", g:"soft", name:"숨쉬기", ico:"◎", anim:"a-breathe", d:{i:40,s:0},
+  ex:()=>0, sh:()=>({x:0,y:0}),
   apply(st,t,p){
-    const n = Math.max(1, Math.round(1 + p.s*2));
-    st.rot += TAU*t*n;
+    const k = 1 + 0.11*p.i*(0.5 - 0.5*Math.cos(TAU*t*cyc(p)));
+    st.sx *= k; st.sy *= k;
   }
 },
-{ id:"glitch", name:"글리치", ico:"▚", anim:"a-glitch",
-  d:{i:45,s:55},
+{ id:"jelly", g:"wave", name:"젤리", ico:"⌇", anim:"a-jelly", d:{i:40,s:45},
+  ex:()=>0, sh:(p)=>({x:0.043*p.i, y:0}),
+  apply(st,t,p,W){
+    const A = 0.038*p.i*W, w = 1 + p.s*2.5;
+    st.rows.push(yn => A*Math.sin(yn*TAU*w - TAU*t));
+  }
+},
+{ id:"ripple", g:"wave", name:"물결", ico:"≋", anim:"a-ripple", d:{i:40,s:40},
+  ex:()=>0, sh:(p)=>({x:0.05*p.i, y:0}),
+  apply(st,t,p,W){
+    const A = 0.028*p.i*W, k = 3 + p.s*6;
+    st.rows.push(yn => A*(Math.sin(yn*k - TAU*t) + 0.5*Math.sin(yn*k*1.9 + TAU*t*2)));
+  }
+},
+{ id:"sway", g:"wave", name:"살랑살랑", ico:"⺌", anim:"a-sway", d:{i:45,s:0},
+  ex:()=>0, sh:(p)=>({x:0.07*p.i, y:0}),
+  apply(st,t,p,W){
+    /* 아래는 고정, 위로 갈수록 크게 — 풀잎처럼 */
+    const A = 0.07*p.i*W, n = cyc(p);
+    st.rows.push(yn => A*Math.pow(1-yn,1.6)*Math.sin(TAU*t*n - yn*1.4));
+  }
+},
+{ id:"glitch", g:"special", name:"글리치", ico:"▚", anim:"a-glitch", d:{i:45,s:55},
   ex:()=>0, sh:(p)=>({x:0.08*p.i, y:0}),
   apply(st,t,p,W){
-    /* 이미지를 통째로 그린 뒤, 몇 개의 가로 띠만 어긋나게 덧그림 — 화면이 깨지지 않음 */
     const steps = Math.max(3, Math.round(4 + p.s*16));
     const k = Math.floor(t*steps);
     const A = 0.07*p.i*W;
@@ -519,6 +939,18 @@ const EFFECTS = [
     }
     st.rgb = 0.011*p.i*W*(0.3 + rnd(k,7));
   }
+},
+{ id:"ghost", g:"special", name:"잔상", ico:"⧉", anim:"a-ghost", d:{i:55,s:40}, lab:["진하기","간격"],
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){ st.ghost = {n:2+Math.round(p.i*3), lag:0.015+p.s*0.06, a:0.25+0.4*p.i}; }
+},
+{ id:"rainbow", g:"special", name:"무지개", ico:"◐", anim:"a-rainbow", d:{i:50,s:0}, lab:["채도","속도"],
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){ st.hue += 360*t*cyc(p); st.sat += p.i*0.7; }
+},
+{ id:"blink", g:"special", name:"깜빡깜빡", ico:"◌", anim:"a-blink", d:{i:70,s:20},
+  ex:()=>0, sh:()=>({x:0,y:0}),
+  apply(st,t,p){ const u = frac(t*cyc(p,1,5)); if(u>=0.5) st.alpha *= 1 - p.i*0.92; }
 }
 ];
 
@@ -526,27 +958,114 @@ const PRESETS = [
   {n:"짜글짜글 밈",  fx:{sizzle:{i:45,s:40}}},
   {n:"말랑 젤리",   fx:{squish:{i:55,s:45}, jelly:{i:35,s:45}}},
   {n:"통통 스티커", fx:{bounce:{i:60,s:40}, squish:{i:30,s:45}}},
-  {n:"두근두근",    fx:{pulse:{i:60,s:50}, breathe:{i:25,s:35}}},
+  {n:"두근두근",    fx:{pulse:{i:60,s:50}, breathe:{i:25,s:0}}},
+  {n:"대롱 키링",   fx:{hang:{i:55,s:20}}},
+  {n:"둥실 풍선",   fx:{float:{i:55,s:0}, breathe:{i:20,s:0}}},
+  {n:"쿵쿵",        fx:{stomp:{i:60,s:0}}},
   {n:"고장난 TV",   fx:{glitch:{i:50,s:60}, shake:{i:22,s:70}}},
-  {n:"물 속",       fx:{ripple:{i:45,s:40}, breathe:{i:30,s:30}}},
+  {n:"물 속",       fx:{ripple:{i:45,s:40}, breathe:{i:30,s:0}}},
+  {n:"잔상 댄스",   fx:{shake:{i:45,s:20}, ghost:{i:60,s:40}}},
+  {n:"무지개 파티", fx:{rainbow:{i:50,s:0}, bounce:{i:45,s:40}}},
 ];
+
+/* ============================================================
+   꾸미기 (입자)
+   ============================================================ */
+/* 모두 부드럽게 나타났다 사라지고(페이드), 한 바퀴에 정확히 맞물려 끊김이 없음 */
+const DECO = [
+  {id:"sparkle", name:"반짝임",   ico:"✧", anim:"a-breathe", kind:"twinkle", d:{n:5, z:40,s:0, c:"#FFFFFF"}},
+  {id:"glitter", name:"금빛 가루",ico:"⁘", anim:"a-float",   kind:"dust",    d:{n:26,z:30,s:0, c:"#FFE3A3"}},
+  {id:"bokeh",   name:"빛망울",   ico:"◍", anim:"a-breathe", kind:"bokeh",   d:{n:9, z:50,s:0, c:"#FFD3E4"}},
+  {id:"snow",    name:"함박눈",   ico:"❅", anim:"a-float",   kind:"fall",    d:{n:30,z:35,s:0, c:"#FFFFFF"}},
+  {id:"petal",   name:"꽃잎",     ico:"❀", anim:"a-sway",    kind:"fall",    d:{n:12,z:45,s:0, c:"#FFC4D6"}},
+  {id:"bubble",  name:"비눗방울", ico:"○", anim:"a-float",   kind:"rise",    d:{n:8, z:45,s:0, c:"#CFE4FF"}},
+  {id:"heart",   name:"하트",     ico:"♡", anim:"a-float",   kind:"rise",    d:{n:5, z:40,s:0, c:"#FFB3C8"}},
+  {id:"rays",    name:"빛내림",   ico:"⫽", anim:"a-breathe", kind:"rays",    d:{n:7, z:50,s:0, c:"#FFF1D2"}, lab:["줄기","밝기","속도"], nmin:3, nmax:14},
+  {id:"leak",    name:"빛번짐",   ico:"◑", anim:"a-spin",    kind:"leak",    d:{n:3, z:45,s:0, c:"#FFA9C9"}, lab:["번짐","세기","속도"], nmin:1, nmax:6},
+];
+
+/* ============================================================
+   색감
+   ============================================================ */
+const ID = [1,0,0,0,0, 0,1,0,0,0, 0,0,1,0,0, 0,0,0,1,0];
+function mm(a,b){ /* a ∘ b : b 먼저, 그다음 a */
+  const r = new Array(20);
+  for(let i=0;i<4;i++) for(let j=0;j<5;j++){
+    let s=0; for(let k=0;k<4;k++) s += a[i*5+k]*b[k*5+j];
+    if(j===4) s += a[i*5+4];
+    r[i*5+j] = s;
+  }
+  return r;
+}
+const mBright = b => { const f=1+b; return [f,0,0,0,0, 0,f,0,0,0, 0,0,f,0,0, 0,0,0,1,0]; };
+const mContrast = c => { const f=1+c, o=128*(1-f); return [f,0,0,0,o, 0,f,0,0,o, 0,0,f,0,o, 0,0,0,1,0]; };
+const mSat = s => { const r=.2126,g=.7152,b=.0722;
+  return [r+(1-r)*s, g-g*s, b-b*s,0,0, r-r*s, g+(1-g)*s, b-b*s,0,0, r-r*s, g-g*s, b+(1-b)*s,0,0, 0,0,0,1,0]; };
+const mHue = deg => { const a=deg*Math.PI/180, c=Math.cos(a), s=Math.sin(a);
+  return [.213+c*.787-s*.213, .715-c*.715-s*.715, .072-c*.072+s*.928,0,0,
+          .213-c*.213+s*.143, .715+c*.285+s*.140, .072-c*.072-s*.283,0,0,
+          .213-c*.213-s*.787, .715-c*.715+s*.715, .072+c*.928+s*.072,0,0, 0,0,0,1,0]; };
+const mOff = (r,g,b) => [1,0,0,0,r, 0,1,0,0,g, 0,0,1,0,b, 0,0,0,1,0];
+const mTemp = k => mOff(k, k*0.15, -k);
+const mSepia = [.393,.769,.189,0,0, .349,.686,.168,0,0, .272,.534,.131,0,0, 0,0,0,1,0];
+const mInvert = [-1,0,0,0,255, 0,-1,0,0,255, 0,0,-1,0,255, 0,0,0,1,0];
+const chain = (...ms) => ms.reduce((acc,m) => mm(m,acc), ID);
+const CPRE = [
+  ["none","원본",   ()=>ID],
+  ["bw","흑백",     ()=>chain(mSat(0), mContrast(.12))],
+  ["sepia","세피아",()=>mSepia],
+  ["vintage","빈티지",()=>chain(mSat(.7), mContrast(-.1), mTemp(18), mBright(.04))],
+  ["vivid","쨍하게",()=>chain(mSat(1.55), mContrast(.14))],
+  ["dreamy","몽환", ()=>chain(mSat(.85), mContrast(-.16), mBright(.07), mOff(14,0,12))],
+  ["cool","차갑게", ()=>chain(mTemp(-24), mSat(.95))],
+  ["warm","따뜻하게",()=>chain(mTemp(22), mSat(1.1))],
+  ["invert","반전", ()=>mInvert],
+];
+function isId(M){ for(let i=0;i<20;i++) if(Math.abs(M[i]-ID[i])>1e-4) return false; return true; }
+function colorMatrix(st){
+  const c = S.col;
+  const pre = CPRE.find(p => p[0]===c.preset);
+  let M = pre ? pre[2]() : ID;
+  if(c.bri)  M = mm(mBright(c.bri/100), M);
+  if(c.con)  M = mm(mContrast(c.con/100), M);
+  if(c.sat)  M = mm(mSat(1+c.sat/100), M);
+  if(c.temp) M = mm(mTemp(c.temp*0.8), M);
+  if(st.sat) M = mm(mSat(1+st.sat), M);
+  const h = c.hue + st.hue;
+  if(Math.abs(h%360) > 0.01) M = mm(mHue(h), M);
+  return isId(M) ? null : M;
+}
+function applyMatrix(g, W, H, M){
+  const im = g.getImageData(0,0,W,H), d = im.data;
+  const [a0,a1,a2,,a4, b0,b1,b2,,b4, c0,c1,c2,,c4] = M;
+  for(let i=0;i<d.length;i+=4){
+    if(d[i+3]===0) continue;
+    const r=d[i], gg=d[i+1], b=d[i+2];
+    d[i]   = a0*r + a1*gg + a2*b + a4;
+    d[i+1] = b0*r + b1*gg + b2*b + b4;
+    d[i+2] = c0*r + c1*gg + c2*b + c4;
+  }
+  g.putImageData(im,0,0);
+}
 
 /* ============================================================
    캔버스
    ============================================================ */
+const mkc = (opts) => { const c=document.createElement("canvas"); return [c, c.getContext("2d", opts)]; };
 const view = $("#view");
 const vctx = view.getContext("2d");
-const scratch = document.createElement("canvas");
-const sctx = scratch.getContext("2d");
-const tmp = document.createElement("canvas");
-const tctx = tmp.getContext("2d");
-const comp = document.createElement("canvas");
-const cctx = comp.getContext("2d");
-const out = document.createElement("canvas");
-const octx = out.getContext("2d");
+const [scratch, sctx] = mkc({willReadFrequently:true});
+const [obuf, obctx] = mkc();
+const [tmp, tctx] = mkc();
+const [comp, cctx] = mkc();
+const [out, octx] = mkc({willReadFrequently:true});
+const [noise, nctx] = mkc();
+noise.width = noise.height = 160;
+function fitBuf(c,W,H){ if(c.width!==W || c.height!==H){ c.width=W; c.height=H; } }
 
 function frames(){ return Math.max(2, Math.round(S.fps * S.dur)); }
 function activeFx(){ return EFFECTS.filter(e => S.fx[e.id] && S.fx[e.id].on); }
+function activeDeco(){ return DECO.filter(d => S.deco[d.id] && S.deco[d.id].on); }
 function par(e){ const v = S.fx[e.id]; return {i:v.i/100, s:v.s/100}; }
 
 /* 어떤 프레임에서도 빈 공간이 없도록 필요한 커버 영역 계산 */
@@ -563,15 +1082,18 @@ function need(){
   const rh = (H*(1+ex) + 2*sy*H)*1.02 + 4;
   return { rw, rh, x0:W/2-rw/2, y0:H/2-rh/2 };
 }
-function lockView(){ return S.bgmode === "color"; }  /* 색상 배경일 때만 꽉 채우기 강제 */
+function lockView(){ return S.cover; }
 function minScale(){
   if(!S.img) return 1;
   if(!lockView()) return 0.05;
   const n = need();
   return Math.max(n.rw/S.img.naturalWidth, n.rh/S.img.naturalHeight);
 }
-/* 효과가 켜지면 필요한 만큼만 화면 중심 기준으로 커지고,
-   효과를 끄면 사용자가 정했던 배율로 되돌아온다 */
+function baseScale(){
+  if(!S.img) return 1;
+  const iw=S.img.naturalWidth, ih=S.img.naturalHeight;
+  return lockView() ? Math.max(S.W/iw, S.H/ih) : Math.min(S.W/iw, S.H/ih)*0.86;
+}
 function applyScale(){
   if(!S.img) return;
   const eff = Math.max(S.view.user, minScale());
@@ -583,111 +1105,131 @@ function applyScale(){
   }
 }
 function clampView(){
+  dirty = true;
   if(!S.img) return;
   applyScale();
+  const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
   if(!lockView()){
-    /* 배경 이미지/투명: 이미지가 화면 밖으로 완전히 나가지만 않게 */
-    const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
     const m = Math.min(S.W,S.H)*0.1;
     S.view.x = clamp(S.view.x, m-dw, S.W-m);
     S.view.y = clamp(S.view.y, m-dh, S.H-m);
-    return;
+  }else{
+    const n = need();
+    S.view.x = clamp(S.view.x, n.x0 + n.rw - dw, n.x0);
+    S.view.y = clamp(S.view.y, n.y0 + n.rh - dh, n.y0);
   }
-  const n = need();
-  const dw = S.img.naturalWidth*S.view.scale, dh = S.img.naturalHeight*S.view.scale;
-  S.view.x = clamp(S.view.x, n.x0 + n.rw - dw, n.x0);
-  S.view.y = clamp(S.view.y, n.y0 + n.rh - dh, n.y0);
+  zoomUI();
 }
 function fitView(){
   if(!S.img) return;
   const iw = S.img.naturalWidth, ih = S.img.naturalHeight;
-  let sc;
-  if(lockView()){
-    sc = minScale();
-  }else{
-    sc = Math.min(S.W/iw, S.H/ih) * 0.86;   /* 배경 위에 살짝 여유 있게 */
-  }
-  S.view.user = sc;
-  S.view.scale = sc;
+  const sc = lockView() ? minScale() : baseScale();
+  S.view.user = sc; S.view.scale = sc;
   S.view.x = S.W/2 - iw*sc/2;
   S.view.y = S.H/2 - ih*sc/2;
   clampView();
 }
 
+function stateAt(t){
+  const st = {tx:0,ty:0,sx:1,sy:1,rot:0,rows:[],bands:[],rgb:0,hue:0,sat:0,alpha:1,ghost:null};
+  const tt = frac(t);
+  for(const e of activeFx()) e.apply(st, tt, par(e), S.W, S.H);
+  return st;
+}
+function drawLayerAt(g, st, W, H, alpha){
+  g.save();
+  g.globalAlpha = alpha;
+  g.translate(W/2 + st.tx, H/2 + st.ty);
+  g.rotate(st.rot);
+  g.scale(st.sx, st.sy);
+  g.translate(-W/2, -H/2);
+  drawImageLayer(g, st, W, H);
+  g.restore();
+}
+
 function render(ctx, t, W, H){
   ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,W,H);
-  ctx.filter = "none";
+  ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = "source-over";
+  ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
+  ctx.clearRect(0,0,W,H);
   ctx.imageSmoothingQuality = "high";
 
-  /* 배경 */
+  ctx.save(); clipShape(ctx, W, H); drawBg(ctx, t, W, H); ctx.restore();
+  if(S.decoLayer === "back"){ ctx.save(); clipShape(ctx, W, H); drawDeco(ctx, t, W, H); ctx.restore(); }
+
+  if(S.img){
+    const st = stateAt(t);
+    fitBuf(scratch, W, H);
+    sctx.setTransform(1,0,0,1,0,0);
+    sctx.globalAlpha = 1;
+    sctx.clearRect(0,0,W,H);
+    sctx.imageSmoothingQuality = "high";
+    if(st.ghost){
+      const G = st.ghost;
+      for(let k=G.n; k>=1; k--){
+        drawLayerAt(sctx, stateAt(t - k*G.lag), W, H, G.a*(1 - k/(G.n+1)));
+      }
+    }
+    drawLayerAt(sctx, st, W, H, 1);
+
+    const M = colorMatrix(st);
+    if(M) applyMatrix(sctx, W, H, M);
+
+    let layer = scratch;
+    if(S.outline > 0) layer = outlined(layer, S.outline*Math.min(W,H)/480, S.ocolor, W, H);
+    if(st.rgb > 0.4) layer = rgbSplit(layer, st.rgb, W, H);
+
+    ctx.save();
+    clipShape(ctx, W, H);
+    ctx.globalAlpha = S.opacity/100 * st.alpha;
+    if(S.shadow > 0){
+      const k = Math.min(W,H)/480;
+      ctx.shadowColor = "rgba(27,27,31,.38)";
+      ctx.shadowBlur = S.shadow*k;
+      ctx.shadowOffsetY = S.shadow*0.35*k;
+    }
+    ctx.drawImage(layer, 0, 0);
+    ctx.restore();
+  }
+
   ctx.save();
   clipShape(ctx, W, H);
-  if(S.bgmode === "none"){
-    /* 진짜 투명으로 둠 — GIF 투명 처리는 저장 단계에서 픽셀 단위로 함 */
-  }else if(S.bgmode === "image" && S.bgimg){
-    ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
-    drawCover(ctx, S.bgimg, W, H);
-  }else{
-    ctx.fillStyle = S.bg; ctx.fillRect(0,0,W,H);
-  }
-  ctx.restore();
-
-  if(!S.img) return;
-
-  const st = {tx:0,ty:0,sx:1,sy:1,rot:0,rows:[],bands:[],filter:[],rgb:0};
-  for(const e of activeFx()) e.apply(st, t, par(e), W, H);
-
-  if(scratch.width!==W || scratch.height!==H){ scratch.width=W; scratch.height=H; }
-  sctx.setTransform(1,0,0,1,0,0);
-  sctx.clearRect(0,0,W,H);
-  sctx.imageSmoothingQuality = "high";
-  sctx.save();
-  sctx.translate(W/2 + st.tx, H/2 + st.ty);
-  sctx.rotate(st.rot);
-  sctx.scale(st.sx, st.sy);
-  sctx.translate(-W/2, -H/2);
-  drawImageLayer(sctx, st, W, H);
-  sctx.restore();
-
-  ctx.save();
-  clipShape(ctx, W, H);
-  if(st.rgb > 0.4){
-    const d = st.rgb;
-    if(comp.width!==W || comp.height!==H){ comp.width=W; comp.height=H; }
-    cctx.setTransform(1,0,0,1,0,0);
-    cctx.clearRect(0,0,W,H);
-    cctx.globalCompositeOperation = "lighter";
-    cctx.drawImage(channel(scratch,"#ff0000",W,H), -d, 0);
-    cctx.drawImage(channel(scratch,"#00ffff",W,H),  d, 0);
-    cctx.globalCompositeOperation = "source-over";
-    ctx.drawImage(comp, 0, 0);
-  }else{
-    ctx.drawImage(scratch, 0, 0);
-  }
+  drawText(ctx, t, W, H);
+  if(S.decoLayer === "front") drawDeco(ctx, t, W, H);
+  drawVignette(ctx, W, H);
+  drawGrain(ctx, t, W, H);
   ctx.restore();
 }
 
-function drawCover(ctx, img, W, H){
-  const s = Math.max(W/img.naturalWidth, H/img.naturalHeight);
-  const dw = img.naturalWidth*s, dh = img.naturalHeight*s;
-  ctx.drawImage(img, W/2-dw/2, H/2-dh/2, dw, dh);
-}
-
-function clipShape(ctx, W, H){
-  if(S.shape === "circle"){
-    ctx.beginPath(); ctx.ellipse(W/2,H/2,W/2,H/2,0,0,TAU); ctx.clip();
-  }else if(S.shape === "round"){
-    const r = Math.min(W,H)*0.12;
-    ctx.beginPath();
-    ctx.moveTo(r,0); ctx.arcTo(W,0,W,H,r); ctx.arcTo(W,H,0,H,r);
-    ctx.arcTo(0,H,0,0,r); ctx.arcTo(0,0,W,0,r); ctx.closePath(); ctx.clip();
+function outlined(src, r, color, W, H){
+  fitBuf(obuf, W, H);
+  obctx.setTransform(1,0,0,1,0,0);
+  obctx.globalCompositeOperation = "source-over";
+  obctx.clearRect(0,0,W,H);
+  const n = r > 6 ? 24 : 16;
+  for(let i=0;i<n;i++){
+    const a = i/n*TAU;
+    obctx.drawImage(src, Math.cos(a)*r, Math.sin(a)*r);
   }
+  obctx.globalCompositeOperation = "source-in";
+  obctx.fillStyle = color; obctx.fillRect(0,0,W,H);
+  obctx.globalCompositeOperation = "source-over";
+  obctx.drawImage(src, 0, 0);
+  return obuf;
 }
-
+function rgbSplit(src, d, W, H){
+  fitBuf(comp, W, H);
+  cctx.setTransform(1,0,0,1,0,0);
+  cctx.clearRect(0,0,W,H);
+  cctx.globalCompositeOperation = "lighter";
+  cctx.drawImage(channel(src,"#ff0000",W,H), -d, 0);
+  cctx.drawImage(channel(src,"#00ffff",W,H),  d, 0);
+  cctx.globalCompositeOperation = "source-over";
+  return comp;
+}
 function channel(src, color, W, H){
-  if(tmp.width!==W || tmp.height!==H){ tmp.width=W; tmp.height=H; }
+  fitBuf(tmp, W, H);
   tctx.setTransform(1,0,0,1,0,0);
   tctx.globalCompositeOperation = "source-over";
   tctx.clearRect(0,0,W,H);
@@ -700,17 +1242,92 @@ function channel(src, color, W, H){
   return tmp;
 }
 
+function drawCover(ctx, img, W, H){
+  const s = Math.max(W/img.naturalWidth, H/img.naturalHeight);
+  const dw = img.naturalWidth*s, dh = img.naturalHeight*s;
+  ctx.drawImage(img, W/2-dw/2, H/2-dh/2, dw, dh);
+}
+
+function drawBg(ctx, t, W, H){
+  const m = S.bgmode;
+  if(m === "none") return;
+  if(m === "image"){
+    ctx.fillStyle = "#fff"; ctx.fillRect(0,0,W,H);
+    if(S.bgimg) drawCover(ctx, S.bgimg, W, H);
+    return;
+  }
+  if(m === "gradient"){
+    const a = S.gangle*Math.PI/180, c = Math.cos(a), s = Math.sin(a);
+    const L = (Math.abs(W*c) + Math.abs(H*s))/2;
+    const gr = ctx.createLinearGradient(W/2 - c*L, H/2 - s*L, W/2 + c*L, H/2 + s*L);
+    gr.addColorStop(0, S.bg); gr.addColorStop(1, S.bg2);
+    ctx.fillStyle = gr; ctx.fillRect(0,0,W,H);
+    return;
+  }
+  ctx.fillStyle = S.bg; ctx.fillRect(0,0,W,H);
+  if(m !== "pattern") return;
+
+  const P = (0.05 + S.psize/100*0.14)*Math.min(W,H);
+  const off = S.pscroll ? frac(t)*P : 0;   /* 한 바퀴에 정확히 한 칸 → 끊김 없음 */
+  ctx.fillStyle = S.pcolor; ctx.strokeStyle = S.pcolor;
+  if(S.pattern === "dots"){
+    const r = P*0.17;
+    for(let y=-P+off; y<H+P; y+=P) for(let x=-P+off; x<W+P; x+=P){
+      ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    }
+  }else if(S.pattern === "check"){
+    const c = P/2;
+    for(let j=-2; j*c < H+P; j++) for(let i=-2; i*c < W+P; i++){
+      if(((i+j)%2+2)%2 === 0) ctx.fillRect(i*c + off, j*c + off, c, c);
+    }
+  }else if(S.pattern === "stripe"){
+    ctx.save();
+    ctx.translate(W/2, H/2); ctx.rotate(-Math.PI/4);
+    const R = Math.hypot(W,H)/2 + P;
+    for(let x=-R - P + off; x<R; x+=P) ctx.fillRect(x, -R, P/2, R*2);
+    ctx.restore();
+  }else if(S.pattern === "grid"){
+    ctx.lineWidth = Math.max(1, P*0.04);
+    ctx.beginPath();
+    for(let x=-P+off; x<W+P; x+=P){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+    for(let y=-P+off; y<H+P; y+=P){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
+    ctx.stroke();
+  }
+}
+
+function clipShape(ctx, W, H){
+  if(S.shape === "circle"){
+    ctx.beginPath(); ctx.ellipse(W/2,H/2,W/2,H/2,0,0,TAU); ctx.clip();
+  }else if(S.shape === "round"){
+    const r = Math.min(W,H)*0.12;
+    ctx.beginPath();
+    ctx.moveTo(r,0); ctx.arcTo(W,0,W,H,r); ctx.arcTo(W,H,0,H,r);
+    ctx.arcTo(0,H,0,0,r); ctx.arcTo(0,0,W,0,r); ctx.closePath(); ctx.clip();
+  }else if(S.shape === "heart"){
+    const w=W, h=H;
+    ctx.beginPath();
+    ctx.moveTo(.5*w,.95*h);
+    ctx.bezierCurveTo(.16*w,.7*h, 0,.48*h, 0,.29*h);
+    ctx.bezierCurveTo(0,.11*h, .14*w,0, .28*w,0);
+    ctx.bezierCurveTo(.4*w,0, .48*w,.08*h, .5*w,.17*h);
+    ctx.bezierCurveTo(.52*w,.08*h, .6*w,0, .72*w,0);
+    ctx.bezierCurveTo(.86*w,0, w,.11*h, w,.29*h);
+    ctx.bezierCurveTo(w,.48*h, .84*w,.7*h, .5*w,.95*h);
+    ctx.closePath(); ctx.clip();
+  }
+}
+
 function drawImageLayer(g, st, W, H){
   const v = S.view, img = S.img;
   const pk = 1 - S.pad/100*2;
   if(S.pad>0){ g.translate(W/2,H/2); g.scale(pk,pk); g.translate(-W/2,-H/2); }
 
   const dw = img.naturalWidth*v.scale, dh = img.naturalHeight*v.scale;
+  if(S.flip){ g.translate(2*v.x + dw, 0); g.scale(-1, 1); }
 
   if(st.rows.length === 0){
     g.drawImage(img, v.x, v.y, dw, dh);
   }else{
-    /* 젤리/물결용 부드러운 가로줄 변위 — 촘촘하고 겹치게 잘라서 이음새가 안 보이게 */
     const N = clamp(Math.round(dh/3), 48, 160);
     const rowH = dh/N;
     const srcRowH = img.naturalHeight/N;
@@ -718,31 +1335,388 @@ function drawImageLayer(g, st, W, H){
       const yn = (i+0.5)/N;
       let ox=0;
       for(const fn of st.rows) ox += fn(yn);
+      const ext = i<N-1 ? 0.35 : 0;
       g.drawImage(img,
-        0, i*srcRowH, img.naturalWidth, srcRowH + (i<N-1 ? srcRowH*0.35 : 0),
-        v.x+ox, v.y+i*rowH, dw, rowH + (i<N-1 ? rowH*0.35 : 0));
+        0, i*srcRowH, img.naturalWidth, Math.min(srcRowH*(1+ext), img.naturalHeight - i*srcRowH),
+        v.x+ox, v.y+i*rowH, dw, rowH*(1+ext));
     }
   }
-
-  /* 글리치 띠: 온전한 이미지 위에 어긋난 띠만 덧그림 */
   for(const b of st.bands){
     const sy = b.y0*img.naturalHeight, sh = (b.y1-b.y0)*img.naturalHeight;
-    g.drawImage(img,
-      0, sy, img.naturalWidth, sh,
-      v.x + b.dx, v.y + b.y0*dh, dw, (b.y1-b.y0)*dh);
+    if(sh < 1) continue;
+    g.drawImage(img, 0, sy, img.naturalWidth, sh, v.x + b.dx, v.y + b.y0*dh, dw, (b.y1-b.y0)*dh);
   }
 }
 
+/* ---------- 꾸미기 그리기 ---------- */
+/* 입자는 고해상도 스프라이트로 한 번만 그려 두고(빛번짐·그라데이션 포함) 크기만 바꿔 찍어서
+   가장자리가 부드럽고 빠름 */
+function hexRgb(h){
+  const n = parseInt((h||"#ffffff").slice(1), 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+const rgba = (c, a) => { const [r,g,b] = hexRgb(c); return "rgba("+r+","+g+","+b+","+a+")"; };
+function mix(c, t){ /* t>0 흰색 쪽, t<0 검정 쪽 */
+  const [r,g,b] = hexRgb(c), k = Math.abs(t), to = t>0 ? 255 : 0;
+  const f = v => Math.round(v + (to - v)*k).toString(16).padStart(2,"0");
+  return "#"+f(r)+f(g)+f(b);
+}
+const SPR = new Map();
+const SPR_N = 160;
+function sprite(id, color){
+  const key = id + color;
+  if(SPR.has(key)) return SPR.get(key);
+  const [cv, g] = mkc();
+  cv.width = cv.height = SPR_N;
+  const R = SPR_N/2;
+  g.translate(R, R);
+  const radial = (stops, r) => {
+    const gr = g.createRadialGradient(0,0,0, 0,0,r);
+    stops.forEach(([o,c]) => gr.addColorStop(o,c));
+    g.fillStyle = gr; g.beginPath(); g.arc(0,0,r,0,TAU); g.fill();
+  };
+  if(id === "sparkle"){
+    /* 오목한 네 갈래 별 하나 + 아주 옅은 후광 */
+    radial([[0,rgba(color,.22)],[1,rgba(color,0)]], R*.42);
+    const s = R*.9, w = R*.1;
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(0,-s);
+    g.quadraticCurveTo(w,-w, s,0);
+    g.quadraticCurveTo(w,w, 0,s);
+    g.quadraticCurveTo(-w,w, -s,0);
+    g.quadraticCurveTo(-w,-w, 0,-s);
+    g.closePath(); g.fill();
+  }else if(id === "glitter"){
+    radial([[0,"rgba(255,255,255,1)"],[.14,rgba(color,.95)],[.36,rgba(color,.28)],[1,rgba(color,0)]], R);
+  }else if(id === "bokeh"){
+    radial([[0,rgba(color,.30)],[.72,rgba(color,.26)],[.9,rgba(color,.42)],[.97,rgba(color,.16)],[1,rgba(color,0)]], R*.98);
+  }else if(id === "snow"){
+    radial([[0,"rgba(255,255,255,.95)"],[.3,"rgba(255,255,255,.75)"],[.62,rgba(color,.22)],[1,rgba(color,0)]], R*.9);
+  }else if(id === "petal"){
+    const p = R*.92;
+    g.shadowColor = rgba(color,.35); g.shadowBlur = R*.12;
+    const gr = g.createLinearGradient(0,-p,0,p);
+    gr.addColorStop(0, mix(color,.55)); gr.addColorStop(.55, color); gr.addColorStop(1, mix(color,-.08));
+    g.fillStyle = gr;
+    g.beginPath();
+    g.moveTo(0,-.58*p);
+    g.quadraticCurveTo(.12*p,-.88*p, .32*p,-.8*p);
+    g.bezierCurveTo(.66*p,-.6*p, .52*p,.42*p, 0,.9*p);
+    g.bezierCurveTo(-.52*p,.42*p, -.66*p,-.6*p, -.32*p,-.8*p);
+    g.quadraticCurveTo(-.12*p,-.88*p, 0,-.58*p);
+    g.fill();
+    g.shadowColor = "transparent";
+    g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = R*.025; g.lineCap = "round";
+    g.beginPath(); g.moveTo(0,-.45*p); g.quadraticCurveTo(.06*p,.2*p, 0,.72*p); g.stroke();
+  }else if(id === "bubble"){
+    const r = R*.92;
+    radial([[0,rgba(color,.05)],[.74,rgba(color,.07)],[.88,rgba(color,.28)],[.96,"rgba(255,255,255,.7)"],[1,"rgba(255,255,255,0)"]], r);
+    if(g.createConicGradient){
+      const cg = g.createConicGradient(-.8, 0, 0);
+      ["rgba(255,182,214,.5)","rgba(255,236,170,.4)","rgba(170,236,214,.45)","rgba(170,200,255,.5)","rgba(220,180,255,.45)","rgba(255,182,214,.5)"]
+        .forEach((c,i,a) => cg.addColorStop(i/(a.length-1), c));
+      g.strokeStyle = cg; g.lineWidth = r*.07;
+      g.beginPath(); g.arc(0,0,r*.9,0,TAU); g.stroke();
+    }
+    g.save(); g.translate(-r*.38,-r*.4); g.rotate(-.75); g.scale(1,.5);
+    radial([[0,"rgba(255,255,255,.95)"],[1,"rgba(255,255,255,0)"]], r*.26);
+    g.restore();
+    g.save(); g.translate(r*.42,r*.46);
+    radial([[0,"rgba(255,255,255,.6)"],[1,"rgba(255,255,255,0)"]], r*.08);
+    g.restore();
+  }else if(id === "heart"){
+    /* 단색, 테두리·광택 없이 깔끔한 모양 하나 */
+    const r = R*.62;
+    g.fillStyle = color;
+    g.beginPath();
+    g.moveTo(0, r*.72);
+    g.bezierCurveTo(-r*.18, r*.55, -r*.95, r*.08, -r*.95, -r*.36);
+    g.bezierCurveTo(-r*.95, -r*.78, -r*.42, -r*.98, 0, -r*.56);
+    g.bezierCurveTo( r*.42, -r*.98,  r*.95, -r*.78,  r*.95, -r*.36);
+    g.bezierCurveTo( r*.95,  r*.08,  r*.18,  r*.55, 0, r*.72);
+    g.closePath(); g.fill();
+  }
+  if(SPR.size > 60) SPR.clear();
+  SPR.set(key, cv);
+  return cv;
+}
+function stamp(g, spr, x, y, size, alpha, rot=0, sx=1){
+  if(alpha <= 0.004 || size <= 0.3) return;
+  g.save();
+  g.globalAlpha = alpha;
+  g.translate(x, y);
+  if(rot) g.rotate(rot);
+  if(sx !== 1) g.scale(sx, 1);
+  g.drawImage(spr, -size, -size, size*2, size*2);
+  g.restore();
+}
+const ease = p => Math.sin(Math.PI*p);               /* 0→1→0 부드러운 등장/퇴장 */
+
+function drawDeco(g, t, W, H){
+  const tt = frac(t);
+  const m = Math.min(W,H);
+  DECO.forEach((d, di) => {
+    const v = S.deco[d.id];
+    if(!v || !v.on) return;
+    const c = 1 + Math.round(v.s/100*2);
+    const z = v.z/100;
+    if(d.kind === "rays"){ drawRays(g, tt, W, H, v, c); return; }
+    if(d.kind === "leak"){ drawLeak(g, tt, W, H, v, c); return; }
+    const spr = sprite(d.id, v.c);
+    for(let i=0;i<v.n;i++){
+      const sd = S.seed*17 + di*101;
+      const r0 = rnd(i+1, sd), r1 = rnd(i+1, sd+1.3), r2 = rnd(i+1, sd+2.7), r3 = rnd(i+1, sd+4.1);
+      const ph = frac(tt*c + r3);
+      if(d.kind === "twinkle"){
+        const k = Math.pow(ease(ph), 1.25);
+        const size = m*(0.018 + z*0.036)*(0.55 + 0.6*r2);
+        stamp(g, spr, (0.06+0.88*r0)*W, (0.06+0.88*r1)*H, size*(0.55+0.45*k), k*0.95);
+      }else if(d.kind === "dust"){
+        const p = frac(r1 + tt*c);
+        const size = m*(0.013 + z*0.03)*(0.5 + r2);
+        const fl = 0.55 + 0.45*Math.sin(TAU*(tt*c*3 + r0));
+        const x = r0*W + Math.sin(TAU*(tt*c + r2))*m*0.012;
+        const y = (0.05 + 1.0*r3)*H - p*H*0.14;
+        stamp(g, spr, x, y, size, ease(p)*fl);
+      }else if(d.kind === "bokeh"){
+        const size = m*(0.05 + z*0.12)*(0.55 + 0.8*r2);
+        const A = m*0.035;
+        const x = r0*W + Math.cos(TAU*(tt*c + r3))*A;
+        const y = r1*H + Math.sin(TAU*(tt*c + r3))*A*0.6;
+        const a = (0.45 + 0.55*(0.5 - 0.5*Math.cos(TAU*(tt*c + r2))))*(0.55 + 0.45*(1-r2));
+        stamp(g, spr, x, y, size, a);
+      }else if(d.kind === "fall"){
+        const depth = r2;
+        const p = frac(r1 + tt*c);
+        const L = H*(0.24 + 0.3*depth);
+        const ys = r3*(H + L) - L;
+        if(d.id === "snow"){
+          const size = m*(0.008 + z*0.03)*(0.45 + 0.9*depth);
+          const x = r0*W + Math.sin(TAU*(tt*c + r0))*size*1.6;
+          stamp(g, spr, x, ys + p*L, size, ease(p)*(0.4 + 0.6*depth));
+        }else{
+          const size = m*(0.02 + z*0.05)*(0.6 + 0.7*depth);
+          const x = r0*W + Math.sin(TAU*(tt*c + r0))*m*0.03;
+          const rot = r2*TAU + Math.sin(TAU*(tt*c + r0))*0.9;
+          const sx = 0.35 + 0.65*Math.abs(Math.cos(TAU*(tt*c + r3)));
+          stamp(g, spr, x, ys + p*L + Math.cos(TAU*(tt*c + r0))*size*0.3, size, ease(p)*(0.6 + 0.4*depth), rot, sx);
+        }
+      }else if(d.kind === "rise"){
+        const p = frac(r1 + tt*c);
+        const L = H*0.3;
+        const ys = H*(0.3 + 0.8*r3);
+        const isHeart = d.id === "heart";
+        const size = m*(isHeart ? 0.022 + z*0.035 : 0.03 + z*0.07)*(0.55 + 0.7*r2);
+        const x = r0*W + Math.sin(TAU*(tt*c + r2))*size*0.7;
+        const rot = 0;
+        stamp(g, spr, x, ys - p*L, size*(0.82 + 0.18*p), ease(p)*(isHeart ? 0.7 : 1), rot);
+      }
+    }
+  });
+}
+
+/* 빛내림: 위쪽 바깥에서 비스듬히 내려오는 부드러운 빛줄기 */
+const [rayBuf, rayCtx] = mkc();
+function drawRays(out, tt, W, H, v, c){
+  /* 1/5 해상도로 그린 뒤 키워서 가장자리를 자연스럽게 번지게 */
+  const q = 5;
+  fitBuf(rayBuf, Math.ceil(W/q), Math.ceil(H/q));
+  const g = rayCtx;
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,rayBuf.width,rayBuf.height);
+  g.setTransform(1/q,0,0,1/q,0,0);
+  const sx = W*0.18, sy = -H*0.3;
+  const R = Math.hypot(W,H)*1.35;
+  const z = v.z/100;
+  g.save();
+  g.globalCompositeOperation = "lighter";
+  for(let i=0;i<v.n;i++){
+    const r0 = rnd(i+1, S.seed*7+3), r1 = rnd(i+1, S.seed*7+5), r2 = rnd(i+1, S.seed*7+9);
+    const a = 0.35 + (i+0.5)/v.n*0.95 + (r0-0.5)*0.08 + 0.025*Math.sin(TAU*(tt*c + r1));
+    const w = 0.018 + 0.04*r2;
+    const al = (0.12 + 0.2*r1)*(0.35 + z*1.3)*(0.55 + 0.45*(0.5 + 0.5*Math.cos(TAU*(tt*c + r0))));
+    const gr = g.createLinearGradient(sx, sy, sx + Math.cos(a)*R, sy + Math.sin(a)*R);
+    gr.addColorStop(0, rgba(v.c, Math.min(1, al)));
+    gr.addColorStop(0.55, rgba(v.c, Math.min(1, al*0.45)));
+    gr.addColorStop(1, rgba(v.c, 0));
+    g.fillStyle = gr;
+    g.beginPath();
+    g.moveTo(sx, sy);
+    g.lineTo(sx + Math.cos(a-w)*R, sy + Math.sin(a-w)*R);
+    g.lineTo(sx + Math.cos(a+w)*R, sy + Math.sin(a+w)*R);
+    g.closePath(); g.fill();
+  }
+  const glow = g.createRadialGradient(sx, 0, 0, sx, 0, Math.max(W,H)*0.6);
+  glow.addColorStop(0, rgba(v.c, 0.35*(0.4+z)));
+  glow.addColorStop(1, rgba(v.c, 0));
+  g.fillStyle = glow; g.fillRect(0,0,W,H);
+  g.restore();
+  out.save();
+  out.globalCompositeOperation = "screen";
+  out.imageSmoothingQuality = "high";
+  out.drawImage(rayBuf, 0, 0, rayBuf.width*q, rayBuf.height*q);
+  out.restore();
+}
+
+/* 빛번짐: 필름 라이트릭처럼 큰 빛 덩어리가 천천히 떠다님 */
+function drawLeak(g, tt, W, H, v, c){
+  const z = v.z/100;
+  const cols = [v.c, "#FFD39A", mix(v.c, .45)];
+  g.save();
+  g.globalCompositeOperation = "screen";
+  for(let i=0;i<v.n;i++){
+    const r0 = rnd(i+1, S.seed*11+1), r1 = rnd(i+1, S.seed*11+2), r2 = rnd(i+1, S.seed*11+3), r3 = rnd(i+1, S.seed*11+4);
+    const cx = W*(0.1 + 0.8*r0) + Math.cos(TAU*(tt*c + r3))*W*0.14;
+    const cy = H*(0.1 + 0.8*r1) + Math.sin(TAU*(tt*c + r3))*H*0.1;
+    const rad = Math.max(W,H)*(0.32 + 0.3*r2);
+    const al = (0.18 + z*0.5)*(0.75 + 0.25*Math.sin(TAU*(tt*c + r0)));
+    const col = cols[i % cols.length];
+    const gr = g.createRadialGradient(cx, cy, 0, cx, cy, rad);
+    gr.addColorStop(0, rgba(col, Math.min(1, al)));
+    gr.addColorStop(0.5, rgba(col, Math.min(1, al*0.4)));
+    gr.addColorStop(1, rgba("#ffffff", 0));
+    g.fillStyle = gr;
+    g.fillRect(0,0,W,H);
+  }
+  g.restore();
+}
+
+/* ---------- 글자 ---------- */
+const FONTS = {
+  jua:     {n:"주아",      css:'"Jua", sans-serif', w:400},
+  dohyeon: {n:"도현",      css:'"Do Hyeon", sans-serif', w:400},
+  bhs:     {n:"검은고딕",  css:'"Black Han Sans", sans-serif', w:400},
+  gaegu:   {n:"개구",      css:'"Gaegu", sans-serif', w:700},
+  pre:     {n:"프리텐다드",css:'Pretendard, sans-serif', w:800},
+  grotesk: {n:"Grotesk",   css:'"Space Grotesk", Pretendard, sans-serif', w:700},
+};
+function drawText(g, t, W, H){
+  const T = S.text;
+  if(!T.str || !T.str.trim()) return;
+  const tt = frac(t);
+  const k = Math.min(W,H)/480, fs = T.size*k, a = T.ai/100;
+  const f = FONTS[T.font] || FONTS.pre;
+  g.save();
+  g.font = f.w + " " + fs + "px " + f.css;
+  g.textBaseline = "middle"; g.textAlign = "left";
+  g.lineJoin = "round"; g.miterLimit = 2;
+
+  const cx = T.x/100*W, cy = T.y/100*H;
+  /* 덩어리 전체 움직임 */
+  let tx=0, ty=0, rot=0, sc=1;
+  if(T.anim==="bounce"){ ty = -Math.abs(Math.sin(Math.PI*tt*2))*fs*0.45*a; }
+  else if(T.anim==="shake"){ tx = Math.sin(TAU*tt*6)*fs*0.08*a; rot = Math.sin(TAU*tt*3)*0.07*a; }
+  else if(T.anim==="pulse"){ const u=frac(tt*2); sc = 1 + 0.18*a*(u<0.36 ? Math.sin(u/0.36*Math.PI) : 0); }
+  else if(T.anim==="sizzle"){ const s=Math.floor(tt*8); tx=(rnd(s,21)*2-1)*fs*0.05*a; ty=(rnd(s,22)*2-1)*fs*0.05*a; rot=(rnd(s,23)*2-1)*0.04*a; }
+  g.translate(cx+tx, cy+ty); g.rotate(rot); g.scale(sc,sc); g.translate(-cx, -cy);
+
+  const lines = T.str.split("\n");
+  const lh = fs*1.18;
+  const y0 = cy - (lines.length-1)*lh/2;
+  const glyphs = [];
+  let gi = 0;
+  lines.forEach((line, li) => {
+    const chars = [...line];
+    const ws = chars.map(ch => g.measureText(ch).width);
+    let x = cx - ws.reduce((s,w)=>s+w, 0)/2;
+    chars.forEach((ch, ci) => { glyphs.push({ch, x, y:y0 + li*lh, i:gi++}); x += ws[ci]; });
+  });
+  const total = glyphs.length;
+  const shown = T.anim==="type" ? Math.min(total, Math.floor(tt/0.72*(total+1))) : total;
+
+  const pos = glyphs.filter(q => q.i < shown && q.ch.trim()).map(q => {
+    let dy = 0;
+    if(T.anim==="wave") dy = Math.sin(TAU*tt*2 - q.i*0.55)*fs*0.2*a;
+    return {...q, y:q.y+dy};
+  });
+  if(T.sw > 0){
+    g.lineWidth = T.sw*2*k; g.strokeStyle = T.stroke;
+    if(T.shadow){ g.shadowColor="rgba(0,0,0,.35)"; g.shadowBlur=8*k; g.shadowOffsetY=4*k; }
+    for(const q of pos) g.strokeText(q.ch, q.x, q.y);
+    g.shadowColor = "transparent";
+  }else if(T.shadow){
+    g.shadowColor="rgba(0,0,0,.35)"; g.shadowBlur=8*k; g.shadowOffsetY=4*k;
+  }
+  for(const q of pos){
+    g.fillStyle = T.anim==="rainbow"
+      ? "hsl(" + ((q.i*32 + 360*tt) % 360) + " " + Math.round(60 + 30*a) + "% 62%)"
+      : T.color;
+    g.fillText(q.ch, q.x, q.y);
+  }
+  g.restore();
+}
+
+/* ---------- 질감 ---------- */
+function drawVignette(g, W, H){
+  if(!S.col.vig) return;
+  const R = Math.hypot(W,H)/2;
+  const gr = g.createRadialGradient(W/2,H/2,R*0.35, W/2,H/2,R);
+  gr.addColorStop(0, "rgba(0,0,0,0)");
+  gr.addColorStop(1, "rgba(0,0,0," + (S.col.vig/100*0.75).toFixed(3) + ")");
+  g.save();
+  g.globalCompositeOperation = "source-atop";   /* 이미 그려진 곳에만 — 투명 영역은 그대로 */
+  g.fillStyle = gr; g.fillRect(0,0,W,H);
+  g.restore();
+}
+function drawGrain(g, t, W, H){
+  if(!S.col.grain) return;
+  const k = Math.floor(frac(t)*frames());
+  let s = (k+1)*2654435761 >>> 0;
+  const im = nctx.createImageData(160,160), d = im.data;
+  for(let i=0;i<d.length;i+=4){
+    s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0;
+    const v = s & 255;
+    d[i]=d[i+1]=d[i+2]=v; d[i+3]=255;
+  }
+  nctx.putImageData(im,0,0);
+  /* 노이즈를 그려진 픽셀 모양대로 잘라서 얹음 — 투명 영역에 회색 얼룩이 생기지 않게 */
+  fitBuf(tmp, W, H);
+  tctx.setTransform(1,0,0,1,0,0);
+  tctx.globalCompositeOperation = "source-over";
+  tctx.clearRect(0,0,W,H);
+  tctx.fillStyle = tctx.createPattern(noise, "repeat");
+  tctx.fillRect(0,0,W,H);
+  tctx.globalCompositeOperation = "destination-in";
+  tctx.drawImage(g.canvas, 0, 0);
+  tctx.globalCompositeOperation = "source-over";
+  g.save();
+  g.globalAlpha = S.col.grain/100*0.45;
+  g.globalCompositeOperation = "overlay";
+  g.drawImage(tmp, 0, 0);
+  g.restore();
+}
+
 /* ============================================================
-   재생 루프 (항상 재생, GIF와 동일하게 프레임 단위 스냅)
+   재생 루프
    ============================================================ */
-let t0 = performance.now();
+let t0 = performance.now(), dirty = true, lastF = -1;
 function phase(now){ return (now - t0)/1000/S.dur % 1; }
 function loop(now){
   const F = frames();
-  const t = Math.floor(phase(now)*F)/F;
-  render(vctx, t, S.W, S.H);
+  if(playing) curFrame = Math.floor(phase(now)*F) % F;
+  curFrame = clamp(curFrame, 0, F-1);
+  if(curFrame !== lastF || dirty){
+    render(vctx, curFrame/F, S.W, S.H);
+    lastF = curFrame; dirty = false;
+    scrubUI();
+  }
   requestAnimationFrame(loop);
+}
+function setPlaying(p){
+  playing = p;
+  if(p) t0 = performance.now() - curFrame/frames()*S.dur*1000;
+  $("#icpause").style.display = p ? "" : "none";
+  $("#icplay").style.display = p ? "none" : "";
+  $("#play").setAttribute("aria-label", p ? "일시정지" : "재생");
+}
+function scrubUI(){
+  const F = frames(), sc = $("#scrub");
+  if(+sc.max !== F-1) sc.max = F-1;
+  sc.value = curFrame;
+  $("#frametxt").textContent = (curFrame+1) + "/" + F;
+}
+function zoomUI(){
+  $("#zoomtxt").textContent = S.img ? Math.round(S.view.scale/baseScale()*100) + "%" : "100%";
 }
 
 /* ============================================================
@@ -761,7 +1735,7 @@ function loadImage(f, cb){
 }
 function setMain(im){
   S.img = im;
-  $("#view").classList.remove("hidden");
+  view.classList.remove("hidden");
   $("#empty").style.display = "none";
   $("#swap").style.display = "";
   resize(); fitView();
@@ -770,7 +1744,7 @@ function setBg(im, name){
   S.bgimg = im;
   $("#bgname").textContent = name || "배경 이미지";
   $("#bgchip").style.display = "flex";
-  clampView();
+  dirty = true;
 }
 
 /* ============================================================
@@ -821,39 +1795,98 @@ view.addEventListener("dblclick", fitView);
 function zoomAt(p, k){
   if(!S.img) return;
   const old = S.view.scale;
-  const ns = clamp(old*k, minScale(), Math.max(minScale(),1)*14);
+  const ns = clamp(old*k, minScale(), Math.max(minScale(), baseScale())*14);
   S.view.x = p.x - (p.x - S.view.x)*ns/old;
   S.view.y = p.y - (p.y - S.view.y)*ns/old;
   S.view.scale = ns;
   S.view.user = ns;
   clampView();
 }
+$("#zin").onclick  = () => zoomAt({x:S.W/2,y:S.H/2}, 1.2);
+$("#zout").onclick = () => zoomAt({x:S.W/2,y:S.H/2}, 1/1.2);
 
-["dragenter","dragover"].forEach(t => holder.addEventListener(t, e => {
-  e.preventDefault(); holder.classList.add("drag");
-}));
-["dragleave","drop"].forEach(t => holder.addEventListener(t, e => {
-  e.preventDefault(); holder.classList.remove("drag");
-}));
-holder.addEventListener("drop", e => {
-  const f = e.dataTransfer.files[0];
-  if(f) loadImage(f, setMain);
-});
+["dragenter","dragover"].forEach(t => holder.addEventListener(t, e => { e.preventDefault(); holder.classList.add("drag"); }));
+["dragleave","drop"].forEach(t => holder.addEventListener(t, e => { e.preventDefault(); holder.classList.remove("drag"); }));
+holder.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if(f) loadImage(f, setMain); });
 window.addEventListener("paste", e => {
+  if(/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
   for(const it of (e.clipboardData?.items||[])){
     if(it.type.startsWith("image/")){ loadImage(it.getAsFile(), setMain); break; }
   }
 });
-$("#pick").onclick = () => $("#file").click();
-$("#swap").onclick = () => $("#file").click();
+const pickMain = () => $("#file").click();
+$("#pick").onclick = pickMain; $("#swap").onclick = pickMain; $("#swap2").onclick = pickMain;
 $("#file").onchange = e => { loadImage(e.target.files[0], setMain); e.target.value=""; };
 $("#bgpick").onclick = () => $("#bgfile").click();
 $("#bgfile").onchange = e => { loadImage(e.target.files[0], setBg); e.target.value=""; };
-$("#bgclear").onclick = () => { S.bgimg = null; $("#bgchip").style.display = "none"; clampView(); };
+$("#bgclear").onclick = () => { S.bgimg = null; $("#bgchip").style.display = "none"; dirty = true; };
 
 /* ============================================================
-   UI
+   메뉴
    ============================================================ */
+function openPane(id){
+  $$(".rbtn").forEach(b => b.setAttribute("aria-selected", b.dataset.p===id ? "true" : "false"));
+  $$(".pane").forEach(p => p.classList.toggle("on", p.dataset.pane===id));
+  $("#panel").scrollTop = 0;
+}
+$$(".rbtn").forEach(b => b.onclick = () => openPane(b.dataset.p));
+
+/* ============================================================
+   설정 ↔ 화면 연결 (data-k = 상태 경로)
+   ============================================================ */
+function getP(p){ return p.split(".").reduce((o,k)=>o[k], S); }
+function setP(p,v){ const ks=p.split("."), l=ks.pop(); ks.reduce((o,k)=>o[k], S)[l] = v; }
+const FMT = {
+  size:v=>v+"px", pad:v=>v+"%", dur:v=>(+v).toFixed(1)+"초",
+  fps:v=>v+" · 총 "+frames()+"프레임", opacity:v=>v+"%", outline:v=>v+"px", shadow:v=>v,
+  gangle:v=>v+"°", "text.size":v=>v+"px", "text.sw":v=>v+"px", "text.x":v=>v+"%", "text.y":v=>v+"%",
+  "col.hue":v=>v+"°", "exp.vloops":v=>v+"바퀴 · "+(v*S.dur).toFixed(1)+"초",
+};
+const HOOK = {
+  ratio:()=>{ resize(); fitView(); },
+  size:()=>resize(),
+  dur:()=>syncTiming(), fps:()=>syncTiming(),
+  pad:clampView, cover:()=>fitView(),
+  bgmode:()=>{ S.cover = S.bgmode==="color"; refreshAll(); fitView(); bgUI(); },
+  "text.font":()=>loadFont(S.text.font),
+  "exp.fmt":()=>expUI(),
+};
+function outs(k){
+  const v = getP(k);
+  $$('[data-o="'+k+'"]').forEach(o => o.textContent = (FMT[k] || (x=>x))(v));
+}
+function refreshEl(el){
+  const k = el.dataset.k, v = getP(k);
+  if(el.matches(".seg,.opts")){
+    el.querySelectorAll("button[data-v]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v)===String(v) ? "true":"false"));
+  }else if(el.type === "checkbox") el.checked = !!v;
+  else el.value = v;
+}
+function refreshAll(){
+  $$("[data-k]").forEach(refreshEl);
+  new Set($$("[data-o]").map(o=>o.dataset.o)).forEach(outs);
+}
+function bindAll(){
+  $$("[data-k]").forEach(el => {
+    const k = el.dataset.k;
+    const after = () => { outs(k); HOOK[k] && HOOK[k](); dirty = true; changed(); };
+    if(el.matches(".seg,.opts")){
+      el.addEventListener("click", e => {
+        const b = e.target.closest("button[data-v]"); if(!b) return;
+        setP(k, b.dataset.v);
+        $$('[data-k="'+k+'"]').forEach(refreshEl);
+        after();
+      });
+    }else if(el.type === "checkbox"){
+      el.onchange = () => { setP(k, el.checked); after(); };
+    }else if(el.type === "range"){
+      el.oninput = () => { setP(k, +el.value); after(); };
+    }else{
+      el.oninput = () => { setP(k, el.value); $$('[data-k="'+k+'"]').forEach(x => x!==el && refreshEl(x)); after(); };
+    }
+  });
+}
+
 function resize(){
   const [a,b] = S.ratio.split(":").map(Number);
   if(a>=b){ S.W = S.size; S.H = Math.round(S.size*b/a); }
@@ -862,105 +1895,258 @@ function resize(){
   out.width = S.W; out.height = S.H;
   clampView();
 }
+function syncTiming(){
+  outs("fps"); outs("exp.vloops");
+  curFrame = clamp(curFrame, 0, frames()-1);
+  if(playing) t0 = performance.now();
+  dirty = true;
+}
+function bgUI(){
+  ["color","gradient","pattern","image","none"].forEach(m => $("#bg-"+m).style.display = S.bgmode===m ? "" : "none");
+}
 
-const grid = $("#fxgrid");
-EFFECTS.forEach(e => {
-  S.fx[e.id] = {on:false, i:e.d.i, s:e.d.s};
-  const b = document.createElement("button");
-  b.className = "fxbtn"; b.setAttribute("aria-pressed","false"); b.dataset.id = e.id;
-  b.innerHTML = '<span class="ico ' + e.anim + '">' + e.ico + '</span><span class="nm">' + e.name + '</span>';
-  b.onclick = () => { S.fx[e.id].on = !S.fx[e.id].on; syncFx(); };
-  grid.appendChild(b);
+/* ---------- 움직임 패널 ---------- */
+const lib = $("#fxlib");
+GROUPS.forEach(([gid, gname]) => {
+  const h = document.createElement("div"); h.className="glbl"; h.textContent = gname; lib.appendChild(h);
+  const grid = document.createElement("div"); grid.className = "fx"; lib.appendChild(grid);
+  EFFECTS.filter(e => e.g===gid).forEach(e => {
+    S.fx[e.id] = {on:false, i:e.d.i, s:e.d.s};
+    const b = document.createElement("button");
+    b.className = "fxbtn"; b.setAttribute("aria-pressed","false"); b.dataset.fx = e.id;
+    b.innerHTML = '<span class="ico ' + e.anim + '">' + e.ico + '</span><span class="nm">' + e.name + '</span>';
+    b.onclick = () => { S.fx[e.id].on = !S.fx[e.id].on; syncFx(); changed(); };
+    grid.appendChild(b);
+  });
 });
 const presetBar = $("#presets");
+const dice = document.createElement("button");
+dice.className = "chip dice"; dice.textContent = "🎲 랜덤";
+dice.onclick = randomize;
+presetBar.appendChild(dice);
 PRESETS.forEach(p => {
   const b = document.createElement("button");
   b.className = "chip"; b.textContent = p.n;
   b.onclick = () => {
     EFFECTS.forEach(e => S.fx[e.id].on = false);
-    for(const k in p.fx){ S.fx[k] = {on:true, i:p.fx[k].i, s:p.fx[k].s}; }
-    syncFx();
+    for(const k in p.fx) S.fx[k] = {on:true, i:p.fx[k].i, s:p.fx[k].s};
+    syncFx(); changed();
   };
   presetBar.appendChild(b);
 });
-
-function syncFx(){
-  const act = activeFx();
-  document.querySelectorAll(".fxbtn").forEach(b =>
-    b.setAttribute("aria-pressed", S.fx[b.dataset.id].on ? "true":"false"));
-  $("#fxcount").textContent = act.length ? act.length + "개 켜짐" : "";
-  $("#fxempty").style.display = act.length ? "none" : "block";
-  $("#fxoff").style.display = act.length ? "" : "none";
-
-  const box = $("#tuners"); box.innerHTML = "";
-  act.forEach(e => {
-    const d = document.createElement("div");
-    d.className = "tuner";
-    d.innerHTML =
-      '<div class="tname"><span class="dot"></span>' + e.name +
-      '<button class="off" data-off="' + e.id + '">끄기</button></div>' +
-      slider(e.id,"i","세기") + slider(e.id,"s","속도");
-    box.appendChild(d);
-  });
-  box.querySelectorAll("[data-off]").forEach(b =>
-    b.onclick = () => { S.fx[b.dataset.off].on = false; syncFx(); });
-  box.querySelectorAll("input[type=range]").forEach(r => {
-    r.oninput = () => {
-      S.fx[r.dataset.fx][r.dataset.key] = +r.value;
-      r.nextElementSibling.textContent = r.value;
-      clampView();
-    };
-  });
-  clampView();
-}
-$("#fxoff").onclick = () => {
+function randomize(){
   EFFECTS.forEach(e => S.fx[e.id].on = false);
-  syncFx();
-};
-function slider(id, key, label){
-  const v = S.fx[id][key];
+  const pool = EFFECTS.filter(e => !["spin","flip","blink"].includes(e.id)).sort(() => Math.random()-0.5);
+  const n = 1 + Math.floor(Math.random()*2.4);
+  pool.slice(0,n).forEach(e => S.fx[e.id] = {on:true, i:Math.round(25+Math.random()*40), s:Math.round(15+Math.random()*50)});
+  syncFx(); changed();
+}
+function slider(scope, id, key, label, min=0, max=100){
+  const v = S[scope][id][key];
   return '<div class="slider"><label>' + label + '</label>' +
-    '<input type="range" min="0" max="100" value="' + v + '" data-fx="' + id + '" data-key="' + key + '">' +
+    '<input type="range" min="'+min+'" max="'+max+'" value="' + v + '" data-scope="'+scope+'" data-id="' + id + '" data-key="' + key + '">' +
     '<output>' + v + '</output></div>';
 }
-
-function seg(sel, attr, fn){
-  const box = $(sel);
-  box.querySelectorAll("button").forEach(b => b.onclick = () => {
-    box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed","false"));
-    b.setAttribute("aria-pressed","true");
-    fn(b.dataset[attr]);
+function wireTuners(box){
+  box.querySelectorAll("input[data-scope]").forEach(r => {
+    r.oninput = () => {
+      const v = r.type==="range" ? +r.value : r.value;
+      S[r.dataset.scope][r.dataset.id][r.dataset.key] = v;
+      if(r.nextElementSibling && r.nextElementSibling.tagName==="OUTPUT") r.nextElementSibling.textContent = v;
+      clampView(); changed();
+    };
   });
 }
-seg("#ratio","r", v => { S.ratio=v; resize(); fitView(); });
-seg("#shape","s", v => { S.shape=v; });
-seg("#bgmode","m", v => {
-  S.bgmode = v;
-  $("#bgcolorbox").style.display = v==="color" ? "" : "none";
-  $("#bgimagebox").style.display = v==="image" ? "" : "none";
-  $("#bgnonenote").style.display = v==="none" ? "" : "none";
-  clampView();
-});
-
-$("#size").oninput = e => { S.size=+e.target.value; $("#sizev").textContent = S.size+"px"; resize(); };
-$("#dur").oninput  = e => { S.dur=+e.target.value/10; $("#durv").textContent = S.dur.toFixed(1)+"초"; syncTiming(); };
-$("#fps").oninput  = e => { S.fps=+e.target.value; syncTiming(); };
-$("#pad").oninput  = e => { S.pad=+e.target.value; $("#padv").textContent = S.pad+"%"; clampView(); };
-function syncTiming(){
-  $("#fpsv").textContent = S.fps + " · 총 " + frames() + "프레임";
-  t0 = performance.now();
+function syncFx(){
+  const act = activeFx();
+  $$(".fxbtn[data-fx]").forEach(b => b.setAttribute("aria-pressed", S.fx[b.dataset.fx].on ? "true":"false"));
+  $("#fxcount").textContent = act.length ? act.length + "개 켜짐" : "";
+  $("#fxoff").style.display = act.length ? "" : "none";
+  $("#tunerwrap").style.display = act.length ? "" : "none";
+  const box = $("#tuners"); box.innerHTML = "";
+  act.forEach(e => {
+    const lab = e.lab || ["세기","속도"];
+    const d = document.createElement("div");
+    d.className = "tuner";
+    d.innerHTML = '<div class="tname"><span class="dot"></span>' + e.name +
+      '<button class="off" data-off="' + e.id + '">끄기</button></div>' +
+      slider("fx", e.id, "i", lab[0]) + slider("fx", e.id, "s", lab[1]);
+    box.appendChild(d);
+  });
+  box.querySelectorAll("[data-off]").forEach(b => b.onclick = () => { S.fx[b.dataset.off].on = false; syncFx(); changed(); });
+  wireTuners(box);
+  clampView(); badges();
 }
-$("#fit").onclick = fitView;
-$("#bgcolor").oninput = e => { S.bg = e.target.value; };
+$("#fxoff").onclick = () => { EFFECTS.forEach(e => S.fx[e.id].on = false); syncFx(); changed(); };
+
+/* ---------- 꾸미기 패널 ---------- */
+const dgrid = $("#decogrid");
+DECO.forEach(d => {
+  S.deco[d.id] = {on:false, ...d.d};
+  const b = document.createElement("button");
+  b.className = "fxbtn"; b.setAttribute("aria-pressed","false"); b.dataset.deco = d.id;
+  b.innerHTML = '<span class="ico ' + d.anim + '">' + d.ico + '</span><span class="nm">' + d.name + '</span>';
+  b.onclick = () => { S.deco[d.id].on = !S.deco[d.id].on; syncDeco(); changed(); };
+  dgrid.appendChild(b);
+});
+function syncDeco(){
+  const act = activeDeco();
+  $$(".fxbtn[data-deco]").forEach(b => b.setAttribute("aria-pressed", S.deco[b.dataset.deco].on ? "true":"false"));
+  $("#decocount").textContent = act.length ? act.length + "개 켜짐" : "";
+  $("#decooff").style.display = act.length ? "" : "none";
+  $("#decotunerwrap").style.display = act.length ? "" : "none";
+  const box = $("#decotuners"); box.innerHTML = "";
+  act.forEach(d => {
+    const v = S.deco[d.id];
+    const el = document.createElement("div");
+    el.className = "tuner";
+    const L = d.lab || ["양","크기","속도"];
+    const extra = '<div class="slider"><label>색</label><input type="color" value="' + v.c + '" data-scope="deco" data-id="' + d.id + '" data-key="c"></div>';
+    el.innerHTML = '<div class="tname"><span class="dot"></span>' + d.name +
+      '<button class="off" data-doff="' + d.id + '">끄기</button></div>' +
+      slider("deco", d.id, "n", L[0], d.nmin || 2, d.nmax || 40) +
+      slider("deco", d.id, "z", L[1]) +
+      slider("deco", d.id, "s", L[2]) + extra;
+    box.appendChild(el);
+  });
+  box.querySelectorAll("[data-doff]").forEach(b => b.onclick = () => { S.deco[b.dataset.doff].on = false; syncDeco(); changed(); });
+  wireTuners(box);
+  dirty = true; badges();
+}
+$("#decooff").onclick = () => { DECO.forEach(d => S.deco[d.id].on = false); syncDeco(); changed(); };
+$("#reseed").onclick = () => { S.seed = (S.seed % 997) + 1 + Math.floor(Math.random()*50); dirty = true; changed(); };
+
+/* ---------- 글자 패널 ---------- */
+const fo = $("#fontopts");
+Object.entries(FONTS).forEach(([id,f]) => {
+  const b = document.createElement("button");
+  b.className = "opt fontopt"; b.dataset.v = id; b.textContent = f.n;
+  b.style.fontFamily = f.css; b.style.fontWeight = f.w;
+  fo.appendChild(b);
+});
+function loadFont(id){
+  const f = FONTS[id]; if(!f || !document.fonts) return;
+  document.fonts.load(f.w + " 40px " + f.css, "가나다ABC").then(() => { dirty = true; }).catch(()=>{});
+}
+$$("#tpos button").forEach(b => b.onclick = () => { S.text.y = +b.dataset.y; refreshAll(); dirty = true; changed(); });
+$("#tcenter").onclick = () => { S.text.x = 50; refreshAll(); dirty = true; changed(); };
+$("#textclear").onclick = () => { S.text.str = ""; refreshAll(); dirty = true; changed(); };
+
+/* ---------- 색감 패널 ---------- */
+const co = $("#colopts");
+CPRE.forEach(([id,n]) => {
+  const b = document.createElement("button");
+  b.className = "opt"; b.dataset.v = id; b.textContent = n;
+  co.appendChild(b);
+});
+$("#colreset").onclick = () => {
+  Object.assign(S.col, {preset:"none", bri:0, con:0, sat:0, temp:0, hue:0, vig:0, grain:0});
+  refreshAll(); dirty = true; changed();
+};
+
+/* ---------- 배지 ---------- */
+function badges(){
+  const set = (k, on, txt) => { const b = $('[data-b="'+k+'"]'); if(!b) return; b.classList.toggle("on", !!on); if(txt!==undefined) b.textContent = txt; };
+  const nf = activeFx().length, nd = activeDeco().length;
+  set("fx", nf, nf || "");
+  set("deco", nd, nd || "");
+  set("text", S.text.str.trim());
+  const c = S.col;
+  set("color", c.preset!=="none" || c.bri || c.con || c.sat || c.temp || c.hue || c.vig || c.grain);
+  set("image", S.outline || S.shadow || S.flip || S.opacity < 100);
+}
+
+/* ============================================================
+   실행 취소 / 다시 실행
+   ============================================================ */
+const HKEYS = ["ratio","size","shape","pad","bgmode","bg","bg2","gangle","pattern","pcolor","psize","pscroll",
+  "cover","flip","opacity","outline","ocolor","shadow","fps","dur","fx","deco","decoLayer","seed","text","col"];
+const COMBO_KEYS = ["fx","deco","decoLayer","text","col","outline","ocolor","shadow","flip","opacity"];
+function snap(keys=HKEYS){ const o={}; keys.forEach(k => o[k] = S[k]); return JSON.stringify(o); }
+let hist = [], hi = -1, histT = null;
+function changed(){
+  badges();
+  clearTimeout(histT);
+  histT = setTimeout(pushHist, 350);
+}
+function pushHist(){
+  const s = snap();
+  if(hist[hi] === s) return;
+  hist = hist.slice(0, hi+1); hist.push(s);
+  if(hist.length > 100) hist.shift();
+  hi = hist.length-1; histUI();
+}
+function restore(json){
+  const o = JSON.parse(json);
+  for(const k in o){
+    if(o[k] && typeof o[k] === "object" && !Array.isArray(o[k])){
+      if(k==="fx"||k==="deco"){ for(const id in S[k]) if(o[k][id]) S[k][id] = {...S[k][id], ...o[k][id]}; }
+      else S[k] = {...S[k], ...o[k]};
+    }else S[k] = o[k];
+  }
+  resize(); refreshAll(); bgUI(); expUI(); syncFx(); syncDeco(); syncTiming(); loadFont(S.text.font);
+  clampView(); dirty = true;
+}
+function histUI(){ $("#undo").disabled = hi <= 0; $("#redo").disabled = hi >= hist.length-1; }
+function undo(){ clearTimeout(histT); pushHist(); if(hi>0){ hi--; restore(hist[hi]); histUI(); } }
+function redo(){ if(hi<hist.length-1){ hi++; restore(hist[hi]); histUI(); } }
+$("#undo").onclick = undo; $("#redo").onclick = redo;
 
 document.addEventListener("keydown", e => {
-  if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const typing = /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName) && document.activeElement.type !== "range";
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z" && !typing){
+    e.preventDefault(); e.shiftKey ? redo() : undo(); return;
+  }
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="y" && !typing){ e.preventDefault(); redo(); return; }
+  if(typing) return;
+  if(e.key===" " && !/BUTTON/.test(document.activeElement.tagName)){ e.preventDefault(); setPlaying(!playing); }
   if(e.key==="r"||e.key==="R") fitView();
 });
+
+/* ---------- 재생바 ---------- */
+$("#play").onclick = () => setPlaying(!playing);
+$("#scrub").oninput = e => { setPlaying(false); curFrame = +e.target.value; dirty = true; };
+$("#fit").onclick = fitView; $("#fit2").onclick = fitView;
+
+/* ============================================================
+   내 조합 (이 브라우저에 저장)
+   ============================================================ */
+const CKEY = "jiggle-combos-v1";
+function loadCombos(){ try{ return JSON.parse(localStorage.getItem(CKEY) || "[]"); }catch(e){ return []; } }
+function saveCombos(list){ try{ localStorage.setItem(CKEY, JSON.stringify(list)); return true; }catch(e){ return false; } }
+function combosUI(){
+  const box = $("#combos"); box.innerHTML = "";
+  loadCombos().forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.innerHTML = '<span></span><span class="del" title="삭제">✕</span>';
+    b.firstChild.textContent = c.n;
+    b.onclick = e => {
+      if(e.target.classList.contains("del")){
+        const l = loadCombos(); l.splice(i,1); saveCombos(l); combosUI(); return;
+      }
+      restore(c.s); changed();
+    };
+    box.appendChild(b);
+  });
+}
+$("#savecombo").onclick = () => {
+  const n = (prompt("조합 이름", "내 조합 " + (loadCombos().length+1)) || "").trim();
+  if(!n) return;
+  const l = loadCombos(); l.push({n, s:snap(COMBO_KEYS)});
+  if(!saveCombos(l)) alert("이 브라우저에서는 저장할 수 없어요.");
+  combosUI();
+};
 
 /* ============================================================
    저장
    ============================================================ */
+function expUI(){
+  const f = S.exp.fmt;
+  ["gif","video","png"].forEach(x => $("#opt-"+x).style.display = f===x ? "" : "none");
+  const label = f==="gif" ? "GIF 만들기" : f==="video" ? "동영상 만들기" : "PNG 저장";
+  $("#makegif").textContent = label; $("#topmake").textContent = label;
+}
 let workerURL = null;
 async function getWorker(){
   const url = "https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js";
@@ -971,58 +2157,134 @@ async function getWorker(){
   }catch(err){}
   return url;
 }
-if(typeof GIF === "undefined"){
-  $("#giferr").style.display = "block";
-  $("#makegif").disabled = true;
+const hasGif = typeof GIF !== "undefined";
+let busy = false;
+
+function setProg(v, txt){
+  $("#progbar").style.width = Math.round(v*100) + "%";
+  $("#progtxt").textContent = txt;
+}
+function startBusy(){
+  busy = true;
+  ["#makegif","#topmake"].forEach(s => { $(s).disabled = true; });
+  $("#makegif").textContent = "만드는 중…";
+  $("#prog").classList.add("on");
+}
+function endBusy(){
+  busy = false;
+  ["#makegif","#topmake"].forEach(s => { $(s).disabled = false; });
+  $("#prog").classList.remove("on");
+  expUI();
+}
+function showResult(blob, kind, name, info){
+  const url = URL.createObjectURL(blob);
+  const img = $("#resultimg"), vid = $("#resultvid");
+  if(kind === "video"){ img.style.display="none"; vid.style.display=""; vid.src = url; }
+  else { vid.style.display="none"; vid.removeAttribute("src"); img.style.display=""; img.src = url; }
+  $("#dl").href = url; $("#dl").download = name;
+  const kb = blob.size/1024;
+  let tip = "";
+  if(kind === "gif" && kb > 8000) tip = " — 용량이 커요. 필름 노이즈를 줄이거나 크기·프레임을 낮춰 보세요.";
+  $("#resultinfo").textContent = info + " · " + (kb >= 1024 ? (kb/1024).toFixed(1) + "MB" : kb.toFixed(0) + "KB") + tip;
+  $("#result").classList.add("on");
+  $("#result").scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
-$("#makegif").onclick = async () => {
+async function makeExport(){
+  if(busy) return;
   if(!S.img) return alert("먼저 이미지를 넣어 주세요.");
-  const btn = $("#makegif");
-  btn.disabled = true; btn.textContent = "만드는 중…";
-  $("#prog").classList.add("on"); setProg(0,"프레임 그리는 중");
+  openPane("save");
+  const f = S.exp.fmt;
+  if(f === "png") return makePNG();
+  if(f === "video") return makeVideo();
+  return makeGIF();
+}
+$("#makegif").onclick = makeExport;
+$("#topmake").onclick = makeExport;
 
+async function makeGIF(){
+  if(!hasGif){ $("#giferr").style.display = "block"; return; }
+  startBusy(); setProg(0,"프레임 그리는 중");
   const F = frames(), delay = Math.round(1000/S.fps);
+  /* 색이 계속 바뀌는 효과가 있으면 팔레트를 프레임마다 새로 만듦 */
+  const shifting = (S.fx.rainbow && S.fx.rainbow.on) || S.text.anim === "rainbow";
+  const needKey = S.bgmode === "none" || S.shape !== "rect";
   const opt = {
     workers: 4,
-    quality: GIF_QUALITY,
+    quality: +S.exp.q,
     width: S.W, height: S.H,
     workerScript: await getWorker(),
-    dither: false,
-    /* 프레임마다 팔레트를 새로 만들면 색이 미세하게 흔들려 지직거림 —
-       팔레트 하나를 전체 프레임에 공유해서 노이즈 제거 */
-    globalPalette: true
+    dither: S.exp.dither && !needKey ? "FloydSteinberg" : false,   /* 투명 GIF에 디더링을 섞으면 가장자리에 점이 튐 */
+    globalPalette: !shifting,
+    repeat: +S.exp.loop
   };
-  const needKey = S.bgmode === "none" || S.shape !== "rect";
   if(needKey) opt.transparent = 0xFF00FF;
   const gif = new GIF(opt);
-
-  for(let f=0; f<F; f++){
-    render(octx, f/F, S.W, S.H);
+  for(let i=0; i<F; i++){
+    render(octx, i/F, S.W, S.H);
     if(needKey) keyOutTransparency(octx, S.W, S.H);
     gif.addFrame(octx, {copy:true, delay});
-    setProg(f/F*0.35, "프레임 " + (f+1) + "/" + F);
-    if(f%4===0) await new Promise(r => setTimeout(r,0));
+    setProg(i/F*0.35, "프레임 " + (i+1) + "/" + F);
+    if(i%4===0) await new Promise(r => setTimeout(r,0));
   }
   gif.on("progress", p => setProg(0.35 + p*0.65, "압축 중 " + Math.round(p*100) + "%"));
   gif.on("finished", blob => {
-    const url = URL.createObjectURL(blob);
-    $("#resultimg").src = url;
-    $("#dl").href = url;
-    $("#dl").download = "jiggle-" + Date.now() + ".gif";
-    $("#resultinfo").textContent = S.W + "×" + S.H + " · " + F + "프레임 · " + (blob.size/1024).toFixed(0) + "KB";
-    $("#result").classList.add("on");
-    $("#prog").classList.remove("on");
-    btn.disabled = false; btn.textContent = "GIF 만들기";
-    $("#result").scrollIntoView({behavior:"smooth", block:"nearest"});
+    endBusy(); dirty = true;
+    showResult(blob, "gif", "jiggle-" + Date.now() + ".gif", S.W + "×" + S.H + " · " + F + "프레임");
   });
   gif.render();
-};
-/* 반투명 가장자리 때문에 생기던 분홍 테두리 제거:
-   진짜 투명으로 그린 프레임을 픽셀 단위로 정리한다.
-   - 알파가 절반 미만 → 완전 투명(키 컬러)
-   - 알파가 절반 이상 → 원래 색 그대로 불투명 처리
-   - 이미지에 우연히 키 컬러와 같은 픽셀이 있으면 티 안 나게 1만큼 비틀기 */
+}
+
+function makePNG(){
+  render(octx, curFrame/frames(), S.W, S.H);
+  out.toBlob(blob => {
+    if(!blob) return alert("PNG를 만들지 못했어요.");
+    showResult(blob, "png", "jiggle-" + Date.now() + ".png", S.W + "×" + S.H + " · " + (curFrame+1) + "번째 프레임");
+  }, "image/png");
+  dirty = true;
+}
+
+async function makeVideo(){
+  if(typeof MediaRecorder === "undefined"){ alert("이 브라우저는 동영상 녹화를 지원하지 않아요. GIF로 저장해 주세요."); return; }
+  const mime = ["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]
+    .find(m => { try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } });
+  if(!mime){ alert("이 브라우저는 동영상 녹화를 지원하지 않아요. GIF로 저장해 주세요."); return; }
+  startBusy(); setProg(0, "녹화 준비 중");
+  const W = S.W - (S.W%2), H = S.H - (S.H%2);
+  const [vc, g] = mkc();
+  vc.width = W; vc.height = H;
+  const stream = vc.captureStream(S.fps);
+  const rec = new MediaRecorder(stream, {mimeType:mime, videoBitsPerSecond:8e6});
+  const chunks = [];
+  rec.ondataavailable = e => { if(e.data.size) chunks.push(e.data); };
+  const done = new Promise(r => rec.onstop = r);
+  const F = frames(), total = F*S.exp.vloops, step = 1000/S.fps;
+  const paint = i => {
+    render(octx, (i%F)/F, S.W, S.H);
+    g.fillStyle = S.bgmode==="none" || S.shape!=="rect" ? "#ffffff" : "#000";
+    g.fillRect(0,0,W,H);
+    g.drawImage(out, 0, 0);
+  };
+  paint(0);
+  rec.start();
+  const start = performance.now();
+  for(let i=0; i<total; i++){
+    paint(i);
+    setProg(i/total, "녹화 중 " + (i+1) + "/" + total);
+    const wait = start + (i+1)*step - performance.now();
+    await new Promise(r => setTimeout(r, Math.max(0, wait)));
+  }
+  rec.stop();
+  await done;
+  stream.getTracks().forEach(t => t.stop());
+  const type = mime.split(";")[0];
+  const blob = new Blob(chunks, {type});
+  endBusy(); dirty = true;
+  showResult(blob, "video", "jiggle-" + Date.now() + (type.includes("mp4") ? ".mp4" : ".webm"),
+    W + "×" + H + " · " + (total/S.fps).toFixed(1) + "초");
+}
+
+/* 반투명 가장자리 때문에 생기던 분홍 테두리 제거 */
 function keyOutTransparency(ctx, W, H){
   const im = ctx.getImageData(0, 0, W, H);
   const d = im.data;
@@ -1037,16 +2299,16 @@ function keyOutTransparency(ctx, W, H){
   ctx.putImageData(im, 0, 0);
 }
 
-function setProg(v, txt){
-  $("#progbar").style.width = Math.round(v*100) + "%";
-  $("#progtxt").textContent = txt;
-}
-
 /* ============================================================
    시작
    ============================================================ */
-syncTiming(); resize();
-S.fx.sizzle.on = true; syncFx();
+if(!hasGif){ $("#giferr").style.display = "block"; }
+bindAll();
+S.fx.sizzle.on = true;
+refreshAll(); bgUI(); expUI(); syncFx(); syncDeco(); combosUI();
+resize(); syncTiming(); setPlaying(true);
+Object.keys(FONTS).forEach(loadFont);
+pushHist();
 requestAnimationFrame(loop);
 </script>
 </body>
