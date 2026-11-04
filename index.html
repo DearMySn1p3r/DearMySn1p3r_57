@@ -36,6 +36,7 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{line-height:1.25}
 h1,h2,h3{margin:0;font-weight:600}
 
 /* ---------- header ---------- */
@@ -281,13 +282,22 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 /* ---------- effects ---------- */
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:28px;padding:0 12px;line-height:1;
   background:var(--bg);border:1px solid var(--line);border-radius:20px;
-  padding:4px 12px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;
-  transition:all .12s;
+  font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;
+  transition:color .12s,border-color .12s,background .12s;
 }
 .chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
-.chip.dice{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip[aria-pressed=true]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.chip[aria-pressed=true]::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);flex:none}
+.chip.dice{
+  background:var(--ink);border-color:var(--ink);color:#fff;
+  font-family:"Space Grotesk",Pretendard,sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;
+}
 .chip.dice:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip.pop{animation:chippop .32s cubic-bezier(.3,0,.4,1)}
+@keyframes chippop{0%{transform:scale(1)}35%{transform:scale(.9)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
 .chip .del{margin-left:6px;color:var(--faint);font-weight:700}
 .chip .del:hover{color:var(--ink)}
 
@@ -799,7 +809,7 @@ const cyc = (p, base=1, span=2) => Math.max(1, Math.round(base + p.s*span));
    ============================================================ */
 const GROUPS = [["move","흔들기"],["soft","말랑·통통"],["wave","일렁임"],["special","특수"]];
 const EFFECTS = [
-{ id:"sizzle", g:"move", name:"짜글짜글", ico:"〰", anim:"a-sizzle", d:{i:40,s:40},
+{ id:"sizzle", g:"move", name:"짜글짜글", ico:"∿", anim:"a-sizzle", d:{i:40,s:40},
   ex:(p)=>rotEx(0.02*p.i,1,1)+0.015*p.i, sh:(p)=>({x:0.026*p.i, y:0.022*p.i}),
   apply(st,t,p,W,H){
     const steps = Math.max(2, Math.round(2 + p.s*8));
@@ -836,7 +846,7 @@ const EFFECTS = [
     st.rot += th;
   }
 },
-{ id:"float", g:"move", name:"둥실둥실", ico:"☁", anim:"a-float", d:{i:45,s:20},
+{ id:"float", g:"move", name:"둥실둥실", ico:"◠", anim:"a-float", d:{i:45,s:20},
   ex:(p)=>rotEx(0.05*p.i,1,1), sh:(p)=>({x:0.02*p.i, y:0.07*p.i}),
   apply(st,t,p,W,H){
     const n = cyc(p);
@@ -885,7 +895,7 @@ const EFFECTS = [
     st.sy *= 1 - a;
   }
 },
-{ id:"pulse", g:"soft", name:"두근두근", ico:"♥", anim:"a-pulse", d:{i:55,s:50},
+{ id:"pulse", g:"soft", name:"두근두근", ico:"♡", anim:"a-pulse", d:{i:55,s:50},
   ex:()=>0, sh:()=>({x:0,y:0}),
   apply(st,t,p){
     const u = frac(t*cyc(p));
@@ -1921,19 +1931,30 @@ GROUPS.forEach(([gid, gname]) => {
 });
 const presetBar = $("#presets");
 const dice = document.createElement("button");
-dice.className = "chip dice"; dice.textContent = "🎲 랜덤";
-dice.onclick = randomize;
+dice.className = "chip dice"; dice.textContent = "RANDOM";
+dice.onclick = () => { randomize(); popChip(dice); };
 presetBar.appendChild(dice);
 PRESETS.forEach(p => {
   const b = document.createElement("button");
-  b.className = "chip"; b.textContent = p.n;
+  b.className = "chip preset"; b.textContent = p.n;
+  b.dataset.ids = Object.keys(p.fx).sort().join(",");
+  b.setAttribute("aria-pressed","false");
   b.onclick = () => {
     EFFECTS.forEach(e => S.fx[e.id].on = false);
     for(const k in p.fx) S.fx[k] = {on:true, i:p.fx[k].i, s:p.fx[k].s};
-    syncFx(); changed();
+    syncFx(); changed(); popChip(b);
   };
   presetBar.appendChild(b);
 });
+/* 눌렀다는 느낌: 살짝 눌렸다 튀어오름 */
+function popChip(el){
+  el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+}
+/* 지금 켜진 효과 조합과 같은 빠른 조합에 '선택됨' 표시 */
+function syncPresets(){
+  const now = activeFx().map(e => e.id).sort().join(",");
+  $$(".chip.preset").forEach(c => c.setAttribute("aria-pressed", c.dataset.ids === now ? "true" : "false"));
+}
 function randomize(){
   EFFECTS.forEach(e => S.fx[e.id].on = false);
   const pool = EFFECTS.filter(e => !["spin","flip","blink"].includes(e.id)).sort(() => Math.random()-0.5);
@@ -1960,6 +1981,7 @@ function wireTuners(box){
 function syncFx(){
   const act = activeFx();
   $$(".fxbtn[data-fx]").forEach(b => b.setAttribute("aria-pressed", S.fx[b.dataset.fx].on ? "true":"false"));
+  syncPresets();
   $("#fxcount").textContent = act.length ? act.length + "개 켜짐" : "";
   $("#fxoff").style.display = act.length ? "" : "none";
   $("#tunerwrap").style.display = act.length ? "" : "none";
@@ -2107,6 +2129,8 @@ document.addEventListener("keydown", e => {
 $("#play").onclick = () => setPlaying(!playing);
 $("#scrub").oninput = e => { setPlaying(false); curFrame = +e.target.value; dirty = true; };
 $("#fit").onclick = fitView; $("#fit2").onclick = fitView;
+
+
 
 /* ============================================================
    내 조합 (이 브라우저에 저장)
